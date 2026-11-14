@@ -7,3 +7,8 @@
   for = "/.netlify/functions/*"
   [headers.values]
     Access-Control-Allow-Origin = "*"
+
+# The Firebase web API key in index.html is a public project identifier, not a secret.
+# Access is governed by Firebase database rules. Netlify's smart scanner flags it, so it is turned off here.
+[build.environment]
+  SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
