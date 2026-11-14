@@ -1,0 +1,9 @@
+# local only
+.netlify/
+node_modules/
+*_backup.html
+index_v*.html
+supabase/
+token.txt
+.DS_Store
+Thumbs.db

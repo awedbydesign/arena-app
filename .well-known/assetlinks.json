@@ -1,0 +1,11 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.awedbydesign.arena",
+    "sha256_cert_fingerprints": [
+      "D9:57:CD:4D:33:E8:77:7D:A1:5E:DD:8C:8C:BB:3D:CC:61:03:C6:6A:5B:EC:B1:AC:EB:72:8A:0E:95:8C:E3:FE",
+      "D4:28:64:1D:83:B5:72:7D:CE:B6:D7:9D:43:E5:EC:78:F0:9A:FA:F4:B9:53:DB:9E:60:BA:F0:74:18:B3:F9:1F"
+    ]
+  }
+}]

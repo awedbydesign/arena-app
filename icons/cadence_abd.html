@@ -1,0 +1,2698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>CADENCE by ABD</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --teal:#1D9E75;
+  --teal-g:rgba(29,158,117,0.45);
+  --coral:#D85A30;
+  --coral-g:rgba(216,90,48,0.45);
+  --amber:#EF9F27;
+  --amber-g:rgba(239,159,39,0.45);
+  --spot:#1DB954;
+  --bg:#06080c;
+  --surf:#0d1017;
+  --surf2:#141820;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.13);
+  --text:#eceef5;
+  --muted:rgba(255,255,255,0.35);
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.012) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,0.012) 1px,transparent 1px);
+  background-size:36px 36px;
+  pointer-events:none;z-index:0;
+}
+#app{
+  width:390px;min-height:100vh;
+  display:flex;flex-direction:column;
+  position:relative;z-index:1;
+}
+.screen{display:none;flex-direction:column;flex:1}
+.screen.active{display:flex}
+
+/* ══════════════ SETUP ══════════════ */
+
+/* Compact header */
+.setup-hd{
+  padding:40px 24px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.setup-brand{display:flex;align-items:center;gap:10px}
+.setup-bfly{
+  width:28px;height:23px;opacity:0.85;
+  filter:drop-shadow(0 0 10px var(--teal-g));
+}
+.setup-wm{font-size:16px;font-weight:900;letter-spacing:4px;color:var(--text);text-transform:uppercase}
+.setup-wm-sub{font-size:8px;font-weight:600;letter-spacing:3px;color:var(--muted);text-transform:uppercase}
+
+/* Compact BPM pill */
+.bpm-pill{
+  display:flex;align-items:center;
+  background:var(--surf);border:1px solid var(--border2);
+  border-radius:12px;overflow:hidden;flex-shrink:0;
+}
+.bp-btn{
+  width:36px;height:40px;background:transparent;border:none;
+  color:var(--muted);font-size:22px;font-weight:200;
+  cursor:pointer;transition:color 0.1s;
+  display:flex;align-items:center;justify-content:center;
+}
+.bp-btn:hover{color:var(--teal)}
+.bpm-mid{
+  padding:0 8px;text-align:center;
+  border-left:1px solid var(--border);border-right:1px solid var(--border);
+  min-width:54px;
+}
+.bpm-mid-val{font-size:20px;font-weight:900;color:var(--teal);letter-spacing:-1px;line-height:1.15}
+.bpm-mid-lbl{font-size:7px;font-weight:700;letter-spacing:1.5px;color:var(--muted)}
+
+/* Tier cards */
+.tier-section{padding:0 24px 18px}
+.tier-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tier-card{
+  border-radius:18px;border:1px solid var(--border2);
+  background:var(--surf);padding:16px 8px 14px;
+  cursor:pointer;text-align:center;
+  transition:all 0.2s;user-select:none;
+  display:flex;flex-direction:column;align-items:center;
+}
+.tier-card:active{transform:scale(0.97)}
+.tc-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:3px;width:26px;margin-bottom:10px;
+}
+.tcp{height:7px;border-radius:2px;background:currentColor;opacity:0.18;transition:opacity 0.2s}
+.tcp.dm{opacity:0.07}
+.tcp.xv{opacity:0.18}
+.tc-grid.duo .tcp{opacity:0.18}
+.tc-name{font-size:10px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--muted);transition:color 0.2s}
+.tc-sub{font-size:8px;letter-spacing:0.5px;color:rgba(255,255,255,0.18);margin-top:3px;transition:color 0.2s}
+.tc-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  margin-top:8px;font-size:7px;font-weight:700;letter-spacing:0.5px;
+  padding:2px 7px;border-radius:20px;opacity:0;transition:opacity 0.2s;
+}
+
+/* BASIC selected */
+.tier-card.tc-basic.on{
+  border-color:var(--teal);background:rgba(29,158,117,0.1);
+  box-shadow:0 0 28px rgba(29,158,117,0.14);
+}
+.tier-card.tc-basic.on .tc-name{color:var(--teal)}
+.tier-card.tc-basic.on .tc-sub{color:rgba(29,158,117,0.6)}
+.tier-card.tc-basic.on .tcp{opacity:0.9}
+.tier-card.tc-basic.on .tcp.dm{opacity:0.15}
+.tier-card.tc-basic.on .tc-badge{opacity:1;background:rgba(29,158,117,0.15);color:var(--teal)}
+
+/* ADVANCED selected */
+.tier-card.tc-advanced.on{
+  border-color:var(--coral);background:rgba(216,90,48,0.1);
+  box-shadow:0 0 28px rgba(216,90,48,0.14);
+}
+.tier-card.tc-advanced.on .tc-name{color:var(--coral)}
+.tier-card.tc-advanced.on .tc-sub{color:rgba(216,90,48,0.6)}
+.tier-card.tc-advanced.on .tcp{opacity:0.8}
+.tier-card.tc-advanced.on .tcp.xv{background:var(--teal);opacity:0.9}
+.tier-card.tc-advanced.on .tc-badge{opacity:1;background:rgba(216,90,48,0.15);color:var(--coral)}
+
+/* PRO selected */
+.tier-card.tc-pro.on{
+  border-color:var(--amber);background:rgba(239,159,39,0.1);
+  box-shadow:0 0 28px rgba(239,159,39,0.14);
+}
+.tier-card.tc-pro.on .tc-name{color:var(--amber)}
+.tier-card.tc-pro.on .tc-sub{color:rgba(239,159,39,0.6)}
+.tier-card.tc-pro.on .tc-grid .tcp.pa{opacity:1;background:var(--teal)}
+.tier-card.tc-pro.on .tc-grid .tcp.pb{opacity:1;background:var(--amber)}
+.tier-card.tc-pro.on .tc-badge{opacity:1;background:rgba(239,159,39,0.15);color:var(--amber)}
+
+/* Settings collapse */
+.settings-toggle{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 14px;border-radius:12px;
+  background:var(--surf);border:1px solid var(--border);
+  cursor:pointer;transition:border-color 0.15s;
+}
+.settings-toggle:hover{border-color:var(--border2)}
+.stg-lbl{font-size:11px;font-weight:700;letter-spacing:0.5px;color:var(--muted)}
+.stg-arr{font-size:16px;color:var(--muted);transition:transform 0.2s;line-height:1}
+.stg-arr.open{transform:rotate(90deg)}
+.settings-body{display:none;padding-top:14px}
+.settings-body.open{display:block}
+.stg-sec{margin-bottom:4px}
+
+/* Section block */
+.sb{padding:0 24px 18px}
+.sl{
+  font-size:9px;font-weight:800;color:var(--muted);
+  letter-spacing:2.5px;text-transform:uppercase;margin-bottom:10px;
+}
+
+/* BPM Selector */
+.bpm-display{
+  background:var(--surf);border:1px solid var(--border2);
+  border-radius:18px;padding:20px 20px 16px;
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+}
+.bpm-num-row{display:flex;align-items:center;gap:0;width:100%}
+.bpm-num{
+  flex:1;text-align:center;
+  font-size:64px;font-weight:900;letter-spacing:-4px;line-height:1;
+  color:var(--teal);text-shadow:0 0 24px var(--teal-g);
+  font-variant-numeric:tabular-nums;
+}
+.bpm-unit{
+  font-size:11px;font-weight:700;letter-spacing:1.5px;
+  color:var(--muted);text-align:center;margin-top:-4px;
+}
+.bpm-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:100%}
+.bb{
+  height:38px;background:var(--surf2);
+  border:1px solid var(--border2);border-radius:10px;
+  color:var(--muted);font-size:13px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all 0.12s;
+}
+.bb:hover{border-color:var(--teal);color:var(--teal)}
+.bb.lg{font-size:20px;font-weight:300}
+
+/* Song browser */
+.song-note{
+  font-size:11px;color:var(--muted);
+  line-height:1.6;margin-bottom:14px;
+}
+.song-note span{color:var(--spot);font-weight:700}
+.sg-group{margin-bottom:14px}
+.sg-hd{
+  font-size:9px;font-weight:800;color:var(--muted);
+  letter-spacing:2px;text-transform:uppercase;
+  margin-bottom:8px;display:flex;align-items:center;gap:10px;
+}
+.sg-hd::after{content:'';flex:1;height:1px;background:var(--border)}
+.sg-scroll{
+  overflow-x:auto;scrollbar-width:none;
+  margin:0 -24px;padding:0 24px;
+}
+.sg-scroll::-webkit-scrollbar{display:none}
+.sg-row{display:flex;gap:8px;width:max-content;padding-bottom:2px}
+
+.sc{
+  min-width:136px;background:var(--surf);
+  border:1px solid var(--border2);border-radius:14px;
+  padding:12px;cursor:pointer;flex-shrink:0;
+  transition:all 0.15s;position:relative;
+}
+.sc:hover{border-color:rgba(29,158,117,0.35)}
+.sc.on{
+  border-color:var(--teal);
+  background:rgba(29,158,117,0.09);
+  box-shadow:0 0 20px rgba(29,158,117,0.1);
+}
+.sc-bpm{
+  font-size:22px;font-weight:900;letter-spacing:-1px;
+  color:var(--teal);line-height:1;margin-bottom:6px;
+}
+.sc.on .sc-bpm{text-shadow:0 0 12px var(--teal-g)}
+.sc-title{
+  font-size:12px;font-weight:800;color:var(--text);
+  margin-bottom:2px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;
+}
+.sc-artist{
+  font-size:10px;color:var(--muted);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.sc-slink{
+  display:inline-flex;align-items:center;gap:3px;
+  margin-top:8px;font-size:9px;font-weight:700;
+  letter-spacing:0.5px;color:var(--spot);
+  text-decoration:none;opacity:0.8;
+  transition:opacity 0.12s;
+}
+.sc-slink:hover{opacity:1}
+.sc-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--spot);flex-shrink:0;
+}
+
+/* Level selector */
+.level-list{display:flex;flex-direction:column;gap:6px}
+.lvl-item{
+  display:flex;align-items:center;gap:12px;
+  background:var(--surf);border:1px solid var(--border2);
+  border-radius:12px;padding:11px 14px;
+  cursor:pointer;transition:all 0.15s;
+}
+.lvl-item.on{
+  border-color:var(--teal);
+  background:rgba(29,158,117,0.09);
+}
+.lvl-num{
+  width:28px;height:28px;border-radius:8px;
+  background:var(--surf2);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;color:var(--muted);
+  flex-shrink:0;transition:all 0.15s;
+}
+.lvl-item.on .lvl-num{
+  background:rgba(29,158,117,0.15);
+  border-color:var(--teal);color:var(--teal);
+}
+.lvl-text{flex:1}
+.lvl-name{font-size:13px;font-weight:700;margin-bottom:2px}
+.lvl-desc{font-size:10px;color:var(--muted)}
+.lvl-badge{
+  font-size:9px;font-weight:700;letter-spacing:0.5px;
+  padding:2px 8px;border-radius:20px;
+  background:rgba(29,158,117,0.15);color:var(--teal);
+  opacity:0;transition:opacity 0.15s;
+}
+.lvl-item.on .lvl-badge{opacity:1}
+
+/* Mode toggle */
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mode-btn{
+  height:44px;border-radius:12px;
+  border:1px solid var(--border2);background:var(--surf);
+  color:var(--muted);font-size:13px;font-weight:700;
+  cursor:pointer;transition:all 0.15s;letter-spacing:0.3px;
+}
+.mode-btn.on{
+  border-color:var(--teal);color:var(--teal);
+  background:rgba(29,158,117,0.09);
+}
+
+/* Routine cards */
+.rso{overflow-x:auto;scrollbar-width:none;margin:0 -24px;padding:0 24px}
+.rso::-webkit-scrollbar{display:none}
+.rs{display:flex;gap:10px;width:max-content;padding-bottom:4px}
+.rc{
+  width:140px;background:var(--surf);
+  border:1px solid var(--border2);border-radius:16px;
+  padding:13px 12px;cursor:pointer;flex-shrink:0;
+  transition:all 0.15s;
+}
+.rc.on{
+  border-color:var(--teal);
+  background:rgba(29,158,117,0.09);
+  box-shadow:0 0 24px rgba(29,158,117,0.12);
+}
+.rc-name{font-size:13px;font-weight:800;margin-bottom:2px}
+.rc-lvl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.rc-desc{font-size:9px;color:rgba(255,255,255,0.25);margin-top:3px;line-height:1.4}
+.rc-tag{
+  display:inline-block;font-size:9px;font-weight:700;
+  letter-spacing:0.5px;padding:2px 7px;border-radius:20px;
+  margin-top:8px;
+}
+.rc-tag.solo{background:rgba(29,158,117,0.15);color:var(--teal)}
+.rc-tag.partner{background:rgba(239,159,39,0.15);color:var(--amber)}
+.rmini{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:10px}
+.rmc{height:9px;border-radius:2px;background:var(--border2)}
+.rmc.tl{background:var(--teal);opacity:0.6}
+.rmc.cr{background:var(--coral);opacity:0.6}
+.rmc.am{background:var(--amber);opacity:0.6}
+.rc.on .rmc.tl,.rc.on .rmc.cr,.rc.on .rmc.am{opacity:1}
+
+/* Start */
+.go-btn{
+  margin:10px 24px 36px;height:60px;
+  background:var(--teal);border:none;border-radius:18px;
+  color:#fff;font-size:16px;font-weight:800;
+  cursor:pointer;letter-spacing:0.5px;
+  box-shadow:0 0 40px rgba(29,158,117,0.28);
+  transition:all 0.12s;
+}
+.go-btn:hover{box-shadow:0 0 60px rgba(29,158,117,0.45);transform:translateY(-1px)}
+.go-btn:active{transform:scale(0.99)}
+
+/* ══════════════ SESSION ══════════════ */
+
+.sess-hd{
+  padding:36px 24px 8px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.sess-logo{display:flex;align-items:center;gap:8px}
+.sess-butterfly{
+  width:18px;height:15px;opacity:0.5;
+  filter:drop-shadow(0 0 4px var(--teal-g));
+}
+.sess-wm{font-size:12px;font-weight:800;letter-spacing:3px;color:rgba(255,255,255,0.3)}
+.sess-wm span{color:var(--teal);opacity:0.8}
+.sess-timer{font-size:13px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.sess-bpm{
+  font-size:11px;font-weight:700;
+  background:rgba(29,158,117,0.1);
+  border:1px solid rgba(29,158,117,0.2);
+  color:var(--teal);padding:4px 12px;border-radius:20px;
+}
+
+/* Beat track */
+.bt{display:flex;gap:5px;padding:6px 24px 4px}
+.bp{
+  flex:1;height:3px;border-radius:2px;
+  background:var(--border2);
+  transition:background 0.06s,box-shadow 0.06s;
+}
+.bp.lit{background:rgba(255,255,255,0.55)}
+.bp.acc{background:var(--amber);box-shadow:0 0 10px var(--amber-g)}
+.bp.asc{background:rgba(255,255,255,0.75);box-shadow:0 0 10px rgba(255,255,255,0.45)}
+.bp.dsc{background:rgba(255,255,255,0.45);box-shadow:0 0 6px rgba(255,255,255,0.2)}
+.bp.turn{background:var(--amber);box-shadow:0 0 16px var(--amber-g)}
+.bp.brk{background:rgba(255,255,255,0.3)}
+
+/* Cue bar */
+.cue-bar{height:36px;display:flex;align-items:center;justify-content:center;padding:0 24px}
+.cue-inner{
+  display:flex;align-items:center;gap:8px;
+  opacity:0;transform:translateY(-4px);
+  transition:opacity 0.12s,transform 0.12s;
+}
+.cue-inner.show{opacity:1;transform:translateY(0)}
+.cue-icon{font-size:16px;line-height:1}
+.cue-text{
+  font-size:14px;font-weight:900;letter-spacing:3px;
+  text-transform:uppercase;color:var(--amber);
+  text-shadow:0 0 20px var(--amber-g);
+}
+
+/* Direction arrow */
+.dir-arrow{
+  font-size:15px;font-weight:900;text-align:center;
+  height:18px;line-height:18px;letter-spacing:1px;
+  color:transparent;transition:color 0.15s,text-shadow 0.15s;
+}
+.dir-arrow.up{color:var(--teal);text-shadow:0 0 12px var(--teal-g)}
+.dir-arrow.dn{color:var(--coral);text-shadow:0 0 12px var(--coral-g)}
+.dir-arrow.tr{color:var(--amber);text-shadow:0 0 16px var(--amber-g)}
+
+/* Count */
+.count-wrap{text-align:center;padding:2px 0 6px}
+.phrase-row{
+  display:flex;align-items:baseline;justify-content:center;gap:6px;
+}
+.phrase-num{
+  font-size:72px;font-weight:900;letter-spacing:-4px;line-height:1;
+  color:rgba(239,159,39,0.35);font-variant-numeric:tabular-nums;
+  min-width:56px;text-align:right;
+  transition:color 0.1s;
+}
+.phrase-num.pop{color:rgba(239,159,39,0.75);text-shadow:0 0 30px var(--amber-g)}
+.phrase-sep{
+  font-size:44px;font-weight:200;line-height:1;
+  color:rgba(255,255,255,0.12);align-self:center;padding-bottom:4px;
+}
+.count-big{
+  font-size:96px;font-weight:900;letter-spacing:-6px;line-height:1;
+  color:var(--text);font-variant-numeric:tabular-nums;
+  transition:color 0.08s,text-shadow 0.08s;
+}
+.count-big.acc{color:var(--amber);text-shadow:0 0 50px var(--amber-g)}
+
+/* Session tags */
+.sess-tags{
+  display:flex;align-items:center;justify-content:center;
+  gap:8px;padding:0 24px 8px;
+}
+.stag{
+  font-size:10px;font-weight:800;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--teal);
+  background:rgba(29,158,117,0.1);
+  border:1px solid rgba(29,158,117,0.2);
+  padding:3px 10px;border-radius:20px;
+}
+.stag2{font-size:10px;color:var(--muted)}
+.lvl-indicator{
+  font-size:10px;font-weight:700;letter-spacing:1px;
+  color:var(--amber);background:rgba(239,159,39,0.1);
+  border:1px solid rgba(239,159,39,0.2);
+  padding:3px 10px;border-radius:20px;
+}
+
+/* Legend */
+.legend{
+  display:flex;align-items:center;justify-content:center;
+  gap:14px;padding:0 24px 6px;
+}
+.leg{display:flex;align-items:center;gap:5px;font-size:9px;color:var(--muted);letter-spacing:0.5px}
+.leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* Grid */
+.grid-area{padding:0 20px;flex:1;display:flex;flex-direction:column}
+.lane-labels{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:12px;margin-bottom:6px;padding:0 4px;
+}
+.lane-lbl{
+  text-align:center;font-size:9px;font-weight:700;
+  color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;
+}
+.the-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:repeat(4,1fr);
+  gap:8px;flex:1;max-height:348px;
+  border-radius:18px;transition:box-shadow 0.2s;
+}
+@keyframes gp{
+  0%{box-shadow:0 0 0 2px var(--amber),0 0 30px var(--amber-g)}
+  100%{box-shadow:0 0 0 0px transparent,0 0 0px transparent}
+}
+.the-grid.pulse{animation:gp 0.38s ease-out}
+@keyframes turn-pulse{
+  0%  {box-shadow:0 0 0 3px var(--amber),0 0 50px var(--amber-g)}
+  50% {box-shadow:0 0 0 14px rgba(239,159,39,0.08),0 0 80px rgba(239,159,39,0.25)}
+  100%{box-shadow:none}
+}
+.the-grid.turn-flash{animation:turn-pulse 0.55s ease-out}
+
+.pad{
+  border-radius:4px;border:1px solid rgba(255,255,255,0.06);
+  background:rgba(255,255,255,0.012);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+  transition:background 0.07s,border-color 0.07s,box-shadow 0.08s;
+}
+.pad-lbl{
+  font-size:10px;font-weight:700;
+  color:rgba(255,255,255,0.1);letter-spacing:0.5px;
+  z-index:1;transition:color 0.12s;
+}
+.pad-cue{
+  position:absolute;top:5px;
+  font-size:7px;font-weight:800;letter-spacing:0.5px;
+  text-transform:uppercase;padding:1px 5px;border-radius:4px;
+  opacity:0;transition:opacity 0.12s;z-index:2;white-space:nowrap;
+}
+
+@keyframes padHit{
+  0%  {background:rgba(255,255,255,0.28);border-color:rgba(255,255,255,1);
+       box-shadow:0 0 0 6px rgba(255,255,255,0.18),0 0 32px rgba(255,255,255,0.95),0 0 70px rgba(255,255,255,0.5);}
+  55% {background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.88);
+       box-shadow:0 0 0 4px rgba(255,255,255,0.07),0 0 18px rgba(255,255,255,0.62),0 0 42px rgba(255,255,255,0.22);}
+  100%{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.88);
+       box-shadow:0 0 0 4px rgba(255,255,255,0.07),0 0 18px rgba(255,255,255,0.62),0 0 42px rgba(255,255,255,0.22);}
+}
+.pad.aL,.pad.aR{
+  background:rgba(255,255,255,0.07);
+  border:2px solid rgba(255,255,255,0.88);
+  box-shadow:
+    0 0 0 4px rgba(255,255,255,0.07),
+    0 0 18px rgba(255,255,255,0.62),
+    0 0 42px rgba(255,255,255,0.22);
+  animation:padHit 0.22s ease-out;
+}
+.pad.aL .pad-lbl,.pad.aR .pad-lbl{color:rgba(255,255,255,0.95)}
+.pad.aL .pad-cue,.pad.aR .pad-cue{
+  background:rgba(255,255,255,0.12);
+  color:rgba(255,255,255,0.95);opacity:1
+}
+.pad.aP{
+  border-color:var(--amber);background:rgba(239,159,39,0.14);
+  box-shadow:0 0 0 1px var(--amber),inset 0 0 28px rgba(239,159,39,0.1),
+             0 0 28px var(--amber-g),0 0 60px rgba(239,159,39,0.2);
+}
+.pad.aP .pad-lbl{color:var(--amber)}
+.pad.aP .pad-cue{background:rgba(239,159,39,0.2);color:var(--amber);opacity:1}
+
+/* Step-mark tutorial badges */
+.step-marks{
+  position:absolute;bottom:4px;left:0;right:0;
+  display:flex;justify-content:center;align-items:center;
+  gap:2px;flex-wrap:wrap;padding:0 3px;
+  pointer-events:none;z-index:3;
+}
+.sm{
+  font-size:8px;font-weight:900;
+  width:13px;height:13px;border-radius:3px;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0.35;transition:opacity 0.08s,transform 0.08s;
+}
+.smL{background:rgba(29,158,117,0.18);color:var(--teal);border:1px solid rgba(29,158,117,0.4);}
+.smR{background:rgba(216,90,48,0.18);color:var(--coral);border:1px solid rgba(216,90,48,0.4);}
+.sm.sm-cur{opacity:1;transform:scale(1.22);box-shadow:0 0 5px currentColor;}
+.sm.sm-done{opacity:0.06;}
+
+.pad.double-cue::after{
+  content:'';position:absolute;inset:-3px;border-radius:7px;
+  border:2px solid rgba(255,255,255,0.6);opacity:0.4;
+  animation:dc 0.5s ease-out infinite alternate;
+}
+@keyframes dc{to{opacity:0.12;inset:-6px}}
+.pad.nL,.pad.nR{
+  border-color:rgba(255,255,255,0.2);
+  background:rgba(255,255,255,0.025);
+  box-shadow:0 0 8px rgba(255,255,255,0.07);
+}
+.pad.nP{border-color:rgba(239,159,39,0.25);background:rgba(239,159,39,0.04)}
+
+/* Stats */
+.stats{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:6px;padding:10px 20px 8px;
+}
+.stat{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:10px;padding:8px 4px;text-align:center;
+}
+.stat-val{font-size:16px;font-weight:800;color:var(--teal);line-height:1}
+.stat-val.co{color:var(--coral)}
+.stat-val.am{color:var(--amber)}
+.stat-val.wh{color:var(--text)}
+.stat-key{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:3px}
+
+/* Controls */
+.ctrl{display:flex;gap:7px;padding:6px 20px 36px}
+.cb{
+  height:50px;
+  background:var(--surf);border:1px solid var(--border2);
+  border-radius:13px;color:var(--muted);
+  font-size:13px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.12s;flex-shrink:0;
+}
+.cb:hover{color:var(--text);border-color:var(--border2)}
+.cb-back{width:50px}
+.cb-pause{flex:1}
+.cb-bpm{width:50px;font-size:18px;font-weight:300}
+.cb-bpm:hover{color:var(--teal);border-color:var(--teal)}
+
+/* ══════════════ INTERVALS (setup) ══════════════ */
+.flow-row{
+  display:flex;align-items:center;gap:6px;
+  margin-bottom:14px;flex-wrap:wrap;
+}
+.fp{
+  flex-shrink:0;font-size:9px;font-weight:800;
+  letter-spacing:0.5px;padding:4px 10px;border-radius:20px;
+  text-transform:uppercase;
+}
+.fp.work{background:rgba(29,158,117,0.12);color:var(--teal)}
+.fp.brk{background:rgba(239,159,39,0.12);color:var(--amber)}
+.fp.rst{background:rgba(239,159,39,0.12);color:var(--amber);cursor:default}
+.fa{font-size:11px;color:var(--muted);flex-shrink:0}
+.rest-opts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+.ro{
+  height:38px;border-radius:10px;
+  border:1px solid var(--border2);background:var(--surf);
+  color:var(--muted);font-size:13px;font-weight:700;
+  cursor:pointer;transition:all 0.15s;
+}
+.ro.on{border-color:var(--amber);color:var(--amber);background:rgba(239,159,39,0.09)}
+.ro-label{
+  font-size:9px;font-weight:800;color:var(--muted);
+  letter-spacing:2px;text-transform:uppercase;
+  margin-bottom:8px;
+}
+.iv-row{margin-top:12px}
+
+/* ══════════════ STAGE PROGRESSION BAR ══════════════ */
+.stage-bar{
+  display:flex;align-items:center;gap:10px;
+  padding:2px 20px 8px;
+}
+.stage-pips{display:flex;gap:5px;flex-shrink:0}
+.sp{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--border2);transition:all 0.2s;
+}
+.sp.done{background:rgba(29,158,117,0.38)}
+.sp.on{
+  background:var(--teal);
+  box-shadow:0 0 8px var(--teal-g);
+  transform:scale(1.25);
+}
+.stage-name-lbl{
+  font-size:9px;font-weight:800;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--muted);flex:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.stage-next-btn{
+  height:27px;padding:0 11px;flex-shrink:0;
+  background:rgba(29,158,117,0.1);
+  border:1px solid rgba(29,158,117,0.3);
+  border-radius:20px;color:var(--teal);
+  font-size:9px;font-weight:800;letter-spacing:1px;
+  cursor:pointer;transition:all 0.12s;text-transform:uppercase;
+}
+.stage-next-btn:hover{background:rgba(29,158,117,0.2);border-color:var(--teal)}
+.stage-next-btn:disabled{opacity:0.25;cursor:default;pointer-events:none}
+
+/* ══════════════ BREAK / REST (session) ══════════════ */
+.screen{position:relative}
+.bp.brk{background:var(--amber);box-shadow:0 0 8px var(--amber-g)}
+
+.rest-overlay{
+  display:none;position:absolute;inset:0;z-index:10;
+  background:rgba(6,8,12,0.97);
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;text-align:center;padding:32px;
+}
+.rest-overlay.visible{display:flex}
+.ro-set{
+  font-size:9px;font-weight:800;letter-spacing:3px;
+  text-transform:uppercase;color:var(--muted);
+}
+.ro-title{
+  font-size:16px;font-weight:900;letter-spacing:8px;
+  text-transform:uppercase;color:var(--amber);
+  text-shadow:0 0 30px var(--amber-g);
+  margin-bottom:4px;
+}
+.ro-countdown{
+  font-size:80px;font-weight:900;letter-spacing:-4px;
+  color:var(--text);line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+.ro-bar{
+  width:180px;height:3px;border-radius:2px;
+  background:var(--border2);overflow:hidden;margin:4px 0;
+}
+.ro-bar-fill{
+  height:100%;background:var(--amber);
+  transition:width 1s linear;
+}
+.ro-hint{font-size:11px;color:var(--muted)}
+.ro-skip{
+  margin-top:14px;height:44px;padding:0 28px;
+  background:transparent;border:1px solid var(--border2);
+  border-radius:12px;color:var(--muted);
+  font-size:13px;font-weight:700;cursor:pointer;
+  transition:all 0.12s;
+}
+.ro-skip:hover{border-color:var(--teal);color:var(--teal)}
+
+/* ── CHARACTER VIEW ── */
+.view-toggle{
+  display:flex;justify-content:center;
+  padding:2px 20px 8px;
+}
+.vt-btn{
+  padding:5px 18px;font-size:9px;font-weight:800;letter-spacing:1.5px;
+  background:transparent;border:1px solid var(--border2);
+  color:var(--muted);cursor:pointer;text-transform:uppercase;
+  transition:all 0.12s;
+}
+.vt-btn:first-child{border-radius:10px 0 0 10px;border-right:none}
+.vt-btn:last-child{border-radius:0 10px 10px 0}
+.vt-btn.on{background:rgba(29,158,117,0.10);border-color:var(--teal);color:var(--teal)}
+.vt-btn.on:first-child{border-right:none}
+.char-area{
+  display:none;flex:1;
+  align-items:center;justify-content:center;
+  padding:0 16px;max-height:320px;min-height:200px;
+}
+.char-svg{width:100%;height:100%}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ════════════════════════ SETUP ════════════════════════ -->
+<div class="screen active" id="scr-setup">
+
+  <!-- Compact header: logo + BPM pill -->
+  <div class="setup-hd">
+    <div class="setup-brand">
+      <svg class="setup-bfly" viewBox="0 0 1094.37 880.54" xmlns="http://www.w3.org/2000/svg" fill="white">
+        <path d="M31,164.65A3.86,3.86,0,0,0,29,167c-.24,1,.07,9.13.7,18.17s2.12,30.94,3.33,48.68c10.58,155.54,14,204.36,14.44,205a74.3,74.3,0,0,0,5.31,5.29C59.85,450.87,161.26,546,202.1,584.36c38.6,36.24,36.16,34.43,42.8,32s75.67-24.45,75.89-24.23-19,9.77-73.78,36.59c-13.5,6.62-25,12.59-25.59,13.28-.91,1.1,1.55,17.25,19.65,129.28,11.37,70.42,20.91,128.83,21.19,129.81.38,1.35,25.36,18.47,103.47,70.93,56.63,38,104.19,69.79,105.69,70.59,4.4,2.34,5.3,2,9.61-3.87,10.72-14.55,72.77-100.92,74.09-103.13a25.24,25.24,0,0,0,2.26-7.25l.73-4.69L566.9,937c4.84,7.3,9,13.28,9.24,13.29s4.36-5.85,9.14-13c8.25-12.35,8.72-12.89,9.18-10.8a29.94,29.94,0,0,1,.57,4.4c.12,2.89.4,3.3,41.87,60.83,19.46,27,35.92,49.82,36.56,50.72,1.67,2.33,3.31,2.66,6.09,1.24,4.78-2.46,206.93-138.29,208.9-140.37a7.16,7.16,0,0,0,2-3.67c0-.85,9.25-58.48,20.55-128.06s20.36-127.28,20.13-128.21c-.34-1.39-5.3-4.09-27.33-14.89-60.73-29.76-72-35.34-71.68-35.62s65.28,20.41,72.7,23.14,8.65,2.7,12.14-.41c3.16-2.8,180.39-168.9,185.47-173.82l2.75-2.66,5.13-75.11c2.83-41.31,5.78-84.5,6.56-96s2.65-38.78,4.15-60.64c2.63-38.46,2.67-39.8,1.39-41.23-2.14-2.36-5.07-1.79-12.72,2.49-3.89,2.17-103.87,56.46-222.17,120.64l-263,142.68c-26.33,14.29-48.29,25.83-48.79,25.63s-80.37-43.46-177.48-96.16L140,221.24C95.07,196.86,53,174,46.48,170.41S34.21,163.92,33.65,164A10.15,10.15,0,0,0,31,164.65Z" transform="translate(-28.88 -163.95)"/>
+      </svg>
+      <div>
+        <div class="setup-wm">Cadence</div>
+        <div class="setup-wm-sub">by ABD</div>
+      </div>
+    </div>
+    <div class="bpm-pill">
+      <button class="bp-btn" onclick="stepBpm(-5)">−</button>
+      <div class="bpm-mid">
+        <div class="bpm-mid-val" id="bpmDigits">110</div>
+        <div class="bpm-mid-lbl">BPM</div>
+      </div>
+      <button class="bp-btn" onclick="stepBpm(+5)">+</button>
+    </div>
+  </div>
+
+  <!-- TIER SELECTOR: primary difficulty choice -->
+  <div class="tier-section">
+    <div class="sl" style="padding:0 0 10px">Select Level</div>
+    <div class="tier-row" id="tierRow"></div>
+  </div>
+
+  <!-- ROUTINE scroll (filtered by tier) -->
+  <div class="sb">
+    <div class="sl">Routine</div>
+    <div class="rso"><div class="rs" id="rscroll"></div></div>
+  </div>
+
+  <!-- SETTINGS (collapsed) -->
+  <div class="sb">
+    <div class="settings-toggle" onclick="toggleSettings()">
+      <span class="stg-lbl">Settings  ·  Mode · Level · Intervals</span>
+      <span class="stg-arr" id="stgArrow">›</span>
+    </div>
+    <div class="settings-body" id="settingsBody">
+      <div class="stg-sec">
+        <div class="sl" style="padding-top:16px">Mode</div>
+        <div class="mode-grid">
+          <button class="mode-btn on" id="mBtn-solo" onclick="setMode('solo')">Solo</button>
+          <button class="mode-btn" id="mBtn-partner" onclick="setMode('partner')">Partner · 2P</button>
+        </div>
+      </div>
+      <div class="stg-sec">
+        <div class="sl" style="padding-top:16px">Fitness Level</div>
+        <div class="level-list" id="levelList"></div>
+      </div>
+      <div class="stg-sec">
+        <div class="sl" style="padding-top:16px">Intervals</div>
+        <div class="flow-row" id="flowRow"></div>
+        <div class="ro-label">Work Set</div>
+        <div class="rest-opts" id="workOpts"></div>
+        <div class="iv-row">
+          <div class="ro-label">Quick Break</div>
+          <div class="rest-opts" id="breakOpts"></div>
+        </div>
+        <div class="iv-row">
+          <div class="ro-label">Full Rest</div>
+          <div class="rest-opts" id="restOpts"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:1;min-height:20px"></div>
+  <button class="go-btn" id="goBtn" onclick="goStart()">Start Session →</button>
+
+</div>
+
+<!-- ════════════════════════ SESSION ════════════════════════ -->
+<div class="screen" id="scr-session">
+
+  <div class="sess-hd">
+    <div class="sess-logo">
+      <svg class="sess-butterfly" viewBox="0 0 1094.37 880.54" fill="white">
+        <path d="M31,164.65A3.86,3.86,0,0,0,29,167c-.24,1,.07,9.13.7,18.17s2.12,30.94,3.33,48.68c10.58,155.54,14,204.36,14.44,205a74.3,74.3,0,0,0,5.31,5.29C59.85,450.87,161.26,546,202.1,584.36c38.6,36.24,36.16,34.43,42.8,32s75.67-24.45,75.89-24.23-19,9.77-73.78,36.59c-13.5,6.62-25,12.59-25.59,13.28-.91,1.1,1.55,17.25,19.65,129.28,11.37,70.42,20.91,128.83,21.19,129.81.38,1.35,25.36,18.47,103.47,70.93,56.63,38,104.19,69.79,105.69,70.59,4.4,2.34,5.3,2,9.61-3.87,10.72-14.55,72.77-100.92,74.09-103.13a25.24,25.24,0,0,0,2.26-7.25l.73-4.69L566.9,937c4.84,7.3,9,13.28,9.24,13.29s4.36-5.85,9.14-13c8.25-12.35,8.72-12.89,9.18-10.8a29.94,29.94,0,0,1,.57,4.4c.12,2.89.4,3.3,41.87,60.83,19.46,27,35.92,49.82,36.56,50.72,1.67,2.33,3.31,2.66,6.09,1.24,4.78-2.46,206.93-138.29,208.9-140.37a7.16,7.16,0,0,0,2-3.67c0-.85,9.25-58.48,20.55-128.06s20.36-127.28,20.13-128.21c-.34-1.39-5.3-4.09-27.33-14.89-60.73-29.76-72-35.34-71.68-35.62s65.28,20.41,72.7,23.14,8.65,2.7,12.14-.41c3.16-2.8,180.39-168.9,185.47-173.82l2.75-2.66,5.13-75.11c2.83-41.31,5.78-84.5,6.56-96s2.65-38.78,4.15-60.64c2.63-38.46,2.67-39.8,1.39-41.23-2.14-2.36-5.07-1.79-12.72,2.49-3.89,2.17-103.87,56.46-222.17,120.64l-263,142.68c-26.33,14.29-48.29,25.83-48.79,25.63s-80.37-43.46-177.48-96.16L140,221.24C95.07,196.86,53,174,46.48,170.41S34.21,163.92,33.65,164A10.15,10.15,0,0,0,31,164.65Z" transform="translate(-28.88 -163.95)"/>
+      </svg>
+      <div class="sess-wm">CADENCE <span>· ABD</span></div>
+    </div>
+    <div class="sess-timer" id="sessTimer">0:00</div>
+    <div class="sess-bpm" id="sessBpm">110 BPM</div>
+  </div>
+
+  <div class="bt" id="beatTrack"></div>
+
+  <div class="cue-bar">
+    <div class="cue-inner" id="cueInner">
+      <div class="cue-icon" id="cueIcon"></div>
+      <div class="cue-text" id="cueText"></div>
+    </div>
+  </div>
+
+  <div class="count-wrap">
+    <div class="dir-arrow" id="dirArrow"></div>
+    <div class="phrase-row">
+      <span class="phrase-num" id="phraseNum">1</span>
+      <span class="phrase-sep">·</span>
+      <span class="count-big" id="countBig">1</span>
+    </div>
+  </div>
+
+  <div class="sess-tags">
+    <div class="stag" id="sessRTag">Straight Climb</div>
+    <div class="stag2" id="sessSetInfo">Set 1/2 · Rnd 1</div>
+    <div class="lvl-indicator" id="sessLvlTag">LVL 1</div>
+  </div>
+
+  <div class="legend" id="legend">
+    <div class="leg"><div class="leg-dot" style="background:var(--teal)"></div>Left foot</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--coral)"></div>Right foot</div>
+  </div>
+
+  <!-- Stage progression bar -->
+  <div class="stage-bar" id="stageBar">
+    <div class="stage-pips" id="stagePips"></div>
+    <div class="stage-name-lbl" id="stageLbl">FEEL · Learn the base</div>
+    <button class="stage-next-btn" id="stageNextBtn" onclick="queueStageAdvance()">NEXT →</button>
+  </div>
+
+  <!-- View toggle -->
+  <div class="view-toggle">
+    <button class="vt-btn on" id="vt-char" onclick="setSessionView('char')">Character</button>
+    <button class="vt-btn" id="vt-grid" onclick="setSessionView('grid')">Grid</button>
+  </div>
+
+  <!-- Character silhouette view -->
+  <div class="char-area" id="charArea" style="display:flex">
+    <svg id="charSvg" viewBox="0 0 300 280" class="char-svg" xmlns="http://www.w3.org/2000/svg">
+      <!-- Mat grid (subtle) -->
+      <rect x="52" y="88" width="196" height="180" rx="14" fill="rgba(255,255,255,0.012)" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+      <line x1="150" y1="88" x2="150" y2="268" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+      <line x1="52" y1="133" x2="248" y2="133" stroke="rgba(255,255,255,0.025)" stroke-width="1"/>
+      <line x1="52" y1="178" x2="248" y2="178" stroke="rgba(255,255,255,0.025)" stroke-width="1"/>
+      <line x1="52" y1="223" x2="248" y2="223" stroke="rgba(255,255,255,0.025)" stroke-width="1"/>
+      <text x="40" y="112" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.12)" font-weight="700" font-family="-apple-system,sans-serif">4</text>
+      <text x="40" y="157" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.12)" font-weight="700" font-family="-apple-system,sans-serif">3</text>
+      <text x="40" y="202" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.12)" font-weight="700" font-family="-apple-system,sans-serif">2</text>
+      <text x="40" y="247" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.12)" font-weight="700" font-family="-apple-system,sans-serif">1</text>
+      <!-- Arms -->
+      <line id="char-la" x1="131" y1="40" x2="95" y2="68" stroke="rgba(255,255,255,0.6)" stroke-width="11" stroke-linecap="round"/>
+      <line id="char-ra" x1="169" y1="40" x2="205" y2="68" stroke="rgba(255,255,255,0.6)" stroke-width="11" stroke-linecap="round"/>
+      <!-- Left leg: upper (hip→knee) + lower (knee→foot) — lerp animated via JS -->
+      <line id="char-llu" x1="142" y1="76" x2="119" y2="167" stroke="rgba(255,255,255,0.55)" stroke-width="11" stroke-linecap="round"/>
+      <line id="char-lll" x1="119" y1="167" x2="96" y2="258" stroke="rgba(255,255,255,0.55)" stroke-width="11" stroke-linecap="round"/>
+      <!-- Right leg -->
+      <line id="char-lru" x1="158" y1="76" x2="181" y2="167" stroke="rgba(255,255,255,0.55)" stroke-width="11" stroke-linecap="round"/>
+      <line id="char-lrl" x1="181" y1="167" x2="204" y2="258" stroke="rgba(255,255,255,0.55)" stroke-width="11" stroke-linecap="round"/>
+      <!-- Body (drawn over leg overlaps) -->
+      <circle cx="150" cy="15" r="16" fill="rgba(255,255,255,0.82)"/>
+      <rect x="133" y="30" width="34" height="46" rx="9" fill="rgba(255,255,255,0.75)"/>
+      <!-- Knee highlight rings (amber, shown on high knee beats) -->
+      <circle id="char-kneeL" cx="0" cy="0" r="11" fill="none" stroke="#EF9F27" stroke-width="2.5" opacity="0"/>
+      <circle id="char-kneeR" cx="0" cy="0" r="11" fill="none" stroke="#EF9F27" stroke-width="2.5" opacity="0"/>
+      <!-- Left foot (teal) — CSS transform transition for smooth moves -->
+      <g id="char-fgl" style="transform:translate(96px,258px);transition:transform 0.22s cubic-bezier(0.34,1.3,0.64,1)">
+        <circle cx="0" cy="0" r="22" fill="rgba(29,158,117,0.2)"/>
+        <circle cx="0" cy="0" r="14" fill="#1D9E75"/>
+        <text x="0" y="5" text-anchor="middle" font-size="9" font-weight="800" fill="white" font-family="-apple-system,sans-serif">L</text>
+      </g>
+      <!-- Right foot (coral) -->
+      <g id="char-fgr" style="transform:translate(204px,258px);transition:transform 0.22s cubic-bezier(0.34,1.3,0.64,1)">
+        <circle cx="0" cy="0" r="22" fill="rgba(216,90,48,0.2)"/>
+        <circle cx="0" cy="0" r="14" fill="#D85A30"/>
+        <text x="0" y="5" text-anchor="middle" font-size="9" font-weight="800" fill="white" font-family="-apple-system,sans-serif">R</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Grid view (hidden by default) -->
+  <div class="grid-area" id="gridArea" style="display:none">
+    <div class="lane-labels">
+      <div class="lane-lbl">Left Lane</div>
+      <div class="lane-lbl">Right Lane</div>
+    </div>
+    <div class="the-grid" id="theGrid"></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-val" id="stRounds">1</div><div class="stat-key">Rounds</div></div>
+    <div class="stat"><div class="stat-val am" id="stBeat">1</div><div class="stat-key">Beat</div></div>
+    <div class="stat"><div class="stat-val co" id="stMode">Solo</div><div class="stat-key">Mode</div></div>
+    <div class="stat"><div class="stat-val wh" id="stCues">0</div><div class="stat-key">Cues</div></div>
+  </div>
+
+  <div class="ctrl">
+    <button class="cb cb-back" onclick="exitSess()">←</button>
+    <button class="cb cb-pause" id="pauseBtn" onclick="togglePause()">Pause</button>
+    <button class="cb cb-bpm" onclick="stepBpm(-5)">−</button>
+    <button class="cb cb-bpm" onclick="stepBpm(+5)">+</button>
+  </div>
+
+  <!-- FULL REST OVERLAY -->
+  <div class="rest-overlay" id="restOverlay">
+    <div class="ro-set" id="roSetInfo">SET 1 COMPLETE</div>
+    <div class="ro-title">REST</div>
+    <div class="ro-countdown" id="roCountdown">0:30</div>
+    <div class="ro-bar"><div class="ro-bar-fill" id="roBarFill" style="width:100%"></div></div>
+    <div class="ro-hint">Next set starts automatically</div>
+    <button class="ro-skip" onclick="skipRest()">Start Early →</button>
+  </div>
+
+</div>
+</div>
+
+<script>
+/* ──────────────────────────────────────────
+   SONGS
+   BPMs are approximate — tune with +/- as needed
+────────────────────────────────────────── */
+const SONGS = [
+  // SLOW 80–99
+  {title:"Saturn",         artist:"SZA",                         bpm:80},
+  {title:"Good Days",      artist:"SZA",                         bpm:82},
+  {title:"APT.",           artist:"ROSÉ & Bruno Mars",           bpm:90},
+  {title:"Kill Bill",      artist:"SZA",                         bpm:90},
+  {title:"Anti-Hero",      artist:"Taylor Swift",                bpm:97},
+  // MID 100–115
+  {title:"Not Like Us",    artist:"Kendrick Lamar",              bpm:101},
+  {title:"Levitating",     artist:"Dua Lipa",                    bpm:103},
+  {title:"Espresso",       artist:"Sabrina Carpenter",           bpm:104},
+  {title:"Birds of a Feather",artist:"Billie Eilish",            bpm:105},
+  {title:"Texas Hold 'Em", artist:"Beyoncé",                     bpm:110},
+  {title:"Rich Flex",      artist:"Drake & 21 Savage",           bpm:110},
+  {title:"Dynamite",       artist:"BTS",                         bpm:114},
+  {title:"Uptown Funk",    artist:"Bruno Mars",                   bpm:115},
+  // DRIVE 116–130
+  {title:"Timeless",       artist:"The Weeknd & Playboi Carti",  bpm:120},
+  {title:"Lovin On Me",    artist:"Jack Harlow",                 bpm:123},
+  {title:"No Role Modelz", artist:"J. Cole",                     bpm:127},
+  // PEAK 131+
+  {title:"luther",         artist:"Kendrick Lamar & SZA",        bpm:138},
+  {title:"Savage",         artist:"Megan Thee Stallion ft. Beyoncé",bpm:140},
+  {title:"7 rings",        artist:"Ariana Grande",               bpm:140},
+  {title:"HUMBLE.",        artist:"Kendrick Lamar",              bpm:150},
+  {title:"Die With A Smile",artist:"Lady Gaga & Bruno Mars",     bpm:158},
+];
+
+const SONG_GROUPS = [
+  {label:'SLOW · 80–99',   test: s => s.bpm < 100},
+  {label:'MID · 100–115',  test: s => s.bpm >= 100 && s.bpm <= 115},
+  {label:'DRIVE · 116–130',test: s => s.bpm > 115 && s.bpm <= 130},
+  {label:'PEAK · 131+',    test: s => s.bpm > 130},
+];
+
+/* ──────────────────────────────────────────
+   TIER SYSTEM
+   Basic / Advanced / Pro — gates routines,
+   starting Simon stage, and default fitness level
+────────────────────────────────────────── */
+const TIER_CONFIG = {
+  basic: {
+    name: 'BASIC',
+    sub: 'Foundation',
+    badge: 'STAGES 1–2',
+    routineIds: ['climb','rockback','stagger','lanelock'],
+    startStage: 0,
+    defaultLevel: 1,
+    defaultMode: 'solo',
+    allowedLevels: [1,2],
+  },
+  advanced: {
+    name: 'ADVANCED',
+    sub: 'Ladder Drills',
+    badge: 'STAGES 3–4',
+    routineIds: ['skiprow','icky','carioca','crosstrain','pushpull'],
+    startStage: 2,
+    defaultLevel: 3,
+    defaultMode: 'solo',
+    allowedLevels: [3,4],
+  },
+  pro: {
+    name: 'PRO',
+    sub: 'Full System',
+    badge: 'ALL STAGES',
+    routineIds: ['kneemarch','kneedrive','ickykick','riverdance','trade','mirror','callreact'],
+    startStage: 3,
+    defaultLevel: 5,
+    defaultMode: 'solo',
+    allowedLevels: [5],
+  },
+};
+
+let currentTier = 'basic';
+let settingsOpen = false;
+
+function setTier(t) {
+  currentTier = t;
+  const cfg = TIER_CONFIG[t];
+  level = cfg.defaultLevel;
+  currentStage = cfg.startStage;
+  setMode(cfg.defaultMode);
+  buildTierCards();
+  buildCards();
+  buildLevels();
+  updateGoBtn();
+}
+
+function buildTierCards() {
+  const row = document.getElementById('tierRow');
+  if (!row) return;
+  row.innerHTML = '';
+
+  Object.entries(TIER_CONFIG).forEach(([id, cfg]) => {
+    const isOn = id === currentTier;
+    const card = document.createElement('div');
+    card.className = `tier-card tc-${id}${isOn ? ' on' : ''}`;
+    card.onclick = () => setTier(id);
+
+    // Mini 2×4 pad grid visual communicating pattern complexity
+    let gridHTML = '';
+    if (id === 'basic') {
+      // Rows 1–2 active (bottom half), rows 3–4 dim
+      gridHTML = `<div class="tc-grid">
+        <div class="tcp dm"></div><div class="tcp dm"></div>
+        <div class="tcp dm"></div><div class="tcp dm"></div>
+        <div class="tcp"></div><div class="tcp"></div>
+        <div class="tcp"></div><div class="tcp"></div>
+      </div>`;
+    } else if (id === 'advanced') {
+      // Full grid with one crossover pip (left foot into right lane)
+      gridHTML = `<div class="tc-grid">
+        <div class="tcp"></div><div class="tcp"></div>
+        <div class="tcp xv"></div><div class="tcp"></div>
+        <div class="tcp"></div><div class="tcp"></div>
+        <div class="tcp"></div><div class="tcp"></div>
+      </div>`;
+    } else {
+      // Full grid, two-color for partner (teal A + amber B)
+      gridHTML = `<div class="tc-grid duo">
+        <div class="tcp pa"></div><div class="tcp pb"></div>
+        <div class="tcp pa"></div><div class="tcp pb"></div>
+        <div class="tcp pa"></div><div class="tcp pb"></div>
+        <div class="tcp pa"></div><div class="tcp pb"></div>
+      </div>`;
+    }
+
+    card.innerHTML = gridHTML + `
+      <div class="tc-name">${cfg.name}</div>
+      <div class="tc-sub">${cfg.sub}</div>
+      <div class="tc-badge">${cfg.badge}</div>
+    `;
+    row.appendChild(card);
+  });
+}
+
+function updateGoBtn() {
+  const btn = document.getElementById('goBtn');
+  if (!btn) return;
+  const map = {
+    basic:    {bg:'var(--teal)',  sh:'rgba(29,158,117,0.3)'},
+    advanced: {bg:'var(--coral)', sh:'rgba(216,90,48,0.3)'},
+    pro:      {bg:'var(--amber)', sh:'rgba(239,159,39,0.3)'},
+  };
+  const c = map[currentTier];
+  btn.style.background = c.bg;
+  btn.style.boxShadow = `0 0 40px ${c.sh}`;
+}
+
+function toggleSettings() {
+  settingsOpen = !settingsOpen;
+  document.getElementById('settingsBody').classList.toggle('open', settingsOpen);
+  document.getElementById('stgArrow').classList.toggle('open', settingsOpen);
+}
+
+/* ──────────────────────────────────────────
+   LEVELS
+────────────────────────────────────────── */
+const LEVELS = [
+  {
+    id:1, name:'Foundation',
+    desc:'Grid steps only — internalize the pattern',
+    badge:'STEPS'
+  },
+  {
+    id:2, name:'Rhythm',
+    desc:'Double step on beat 1 — feel the bounce',
+    badge:'+DOUBLE'
+  },
+  {
+    id:3, name:'Athletic',
+    desc:'Drive knee on off-beats — power & elevation',
+    badge:'+KNEE DRIVE'
+  },
+  {
+    id:4, name:'Power',
+    desc:'Jump on beats 4 & 8 — explosive phrase finish',
+    badge:'+JUMP'
+  },
+  {
+    id:5, name:'Elite',
+    desc:'Full cue sequence every beat — max output',
+    badge:'ALL CUES'
+  },
+];
+
+/* Movement cue per beat index (0–7) and level */
+function getCue(beatIdx, lvl) {
+  if (lvl === 1) return null;
+  if (lvl === 2) {
+    return beatIdx === 0 ? {icon:'⚡', label:'DOUBLE STEP'} : null;
+  }
+  if (lvl === 3) {
+    if (beatIdx % 2 === 1) return {icon:'🦵', label:'DRIVE KNEE'};
+    return null;
+  }
+  if (lvl === 4) {
+    if (beatIdx === 3 || beatIdx === 7) return {icon:'🚀', label:'POWER JUMP'};
+    if (beatIdx % 2 === 1) return {icon:'🦵', label:'DRIVE KNEE'};
+    return null;
+  }
+  // Level 5 — full sequence
+  const all5 = [
+    {icon:'⚡', label:'DOUBLE STEP'},
+    {icon:'🦵', label:'DRIVE KNEE'},
+    {icon:'💪', label:'ARM DRIVE'},
+    {icon:'🚀', label:'POWER JUMP'},
+    {icon:'⚡', label:'QUICK STEP'},
+    {icon:'🦵', label:'DRIVE KNEE'},
+    {icon:'💪', label:'ARM DRIVE'},
+    {icon:'🚀', label:'POWER JUMP'},
+  ];
+  return all5[beatIdx];
+}
+
+/* ──────────────────────────────────────────
+   ROUTINES
+   aL/aR = Person A left/right foot pad
+   bL/bR = Person B left/right foot pad
+   null  = foot not on a pad this beat
+────────────────────────────────────────── */
+
+/* ──────────────────────────────────────────
+   RANDOM BLOCK GENERATOR
+   Two independent feet (1=L, 2=R) travel from
+   Row 1 to Row 4 in 8 beats. Infinite variety.
+
+   diff controls independence and rhythm style:
+   1 = bilateral (both feet same row, simple)
+   2 = staggered (one foot leads by 1 rung)
+   3 = syncopated (occasional step-back + lead)
+   4 = complex (wide stagger, backstepping, solo)
+
+   BACK version auto-generated by flipBlock().
+────────────────────────────────────────── */
+
+let _blockSeq = 0; // counter for unique IDs
+
+/* ──────────────────────────────────────────
+   BLOCK GENERATOR
+   11 movement styles — two independent feet
+   travel from Row 1 → Row 4 in 8 beats.
+   Diff controls which styles are available.
+────────────────────────────────────────── */
+function generateBlock(diff) {
+  const stylePool = diff <= 1
+    ? ['together','together','double_step']
+    : diff <= 2
+    ? ['together','double_step','l_leads','r_leads','burst','groove','quick_slow']
+    : diff <= 3
+    ? ['l_leads','r_leads','scissors','burst','stepback','groove','pendulum','single_alt','wave']
+    : ['scissors','pendulum','single_alt','wave','burst','stepback','groove','quick_slow'];
+
+  const style = stylePool[Math.floor(Math.random() * stylePool.length)];
+  const steps = [];
+
+  if (style === 'together') {
+    // Walk both feet together: 2 beats per rung — 1,1,2,2,3,3,4,4
+    for (let b = 0; b < 8; b++) {
+      const row = Math.min(4, Math.ceil((b + 1) / 2));
+      steps.push({aL:'L'+row, aR:'R'+row});
+    }
+
+  } else if (style === 'double_step') {
+    // Hold longer at bottom, quick climb to top — adds rhythmic tension
+    // 1,1,1,2,3,3,4,4
+    [1,1,1,2,3,3,4,4].forEach(r => steps.push({aL:'L'+r, aR:'R'+r}));
+
+  } else if (style === 'quick_slow') {
+    // Quick-quick-slow dance rhythm: advance fast then hold
+    // 1,2,2,3,4,4,4,4 — or mirrored 1,1,2,3,3,4,4,4
+    const p = Math.random() > 0.5
+      ? [1,2,2,3,4,4,4,4]
+      : [1,1,2,3,3,4,4,4];
+    p.forEach(r => steps.push({aL:'L'+r, aR:'R'+r}));
+
+  } else if (style === 'groove') {
+    // Circular feel: oscillate between 2 rows then shift up
+    // 1,2,1,2,3,4,3,4 — or 1,2,2,1,3,4,4,3 variation
+    const lo = Math.random() > 0.5 ? [1,2,1,2] : [1,2,2,1];
+    const hi = Math.random() > 0.5 ? [3,4,3,4] : [3,4,4,3];
+    [...lo,...hi].forEach(r => steps.push({aL:'L'+r, aR:'R'+r}));
+    steps[7] = {aL:'L4', aR:'R4'};
+
+  } else if (style === 'stepback') {
+    // 2-forward-1-back dance rhythm up the ladder
+    // 1→2→3→2→3→4→4→4 (dip varies)
+    const dip   = 1 + Math.floor(Math.random() * 2); // 2 or 3
+    const climb = Math.min(4, dip + 1);
+    const peak  = Math.min(4, climb + 1);
+    [1, dip, climb, dip, climb, peak, 4, 4].forEach(r =>
+      steps.push({aL:'L'+r, aR:'R'+r}));
+
+  } else if (style === 'l_leads') {
+    // L foot one rung ahead of R — step-together up the ladder
+    [[2,1],[2,2],[3,2],[3,3],[4,3],[4,4],[4,4],[4,4]].forEach(([l,r]) =>
+      steps.push({aL:'L'+l, aR:'R'+r}));
+
+  } else if (style === 'r_leads') {
+    // R foot one rung ahead of L
+    [[1,2],[2,2],[2,3],[3,3],[3,4],[4,4],[4,4],[4,4]].forEach(([l,r]) =>
+      steps.push({aL:'L'+l, aR:'R'+r}));
+
+  } else if (style === 'scissors') {
+    // Feet trade leads each beat — criss-cross ascending
+    [[1,2],[2,1],[2,3],[3,2],[3,4],[4,3],[4,4],[4,4]].forEach(([l,r]) =>
+      steps.push({aL:'L'+l, aR:'R'+r}));
+
+  } else if (style === 'pendulum') {
+    // Feet swing in opposition and converge at top: wide→narrow→wide→top
+    [[3,1],[2,2],[1,3],[2,4],[3,4],[4,4],[4,4],[4,4]].forEach(([l,r]) =>
+      steps.push({aL:'L'+l, aR:'R'+r}));
+
+  } else if (style === 'single_alt') {
+    // One foot at a time alternating up, land together at top
+    // L1, R1, L2, R2, L3, R3, L4+R4, L4+R4
+    for (let b = 0; b < 8; b++) {
+      const row = Math.min(4, Math.ceil((b + 1) / 2));
+      if (b >= 6) {
+        steps.push({aL:'L4', aR:'R4'});
+      } else if (b % 2 === 0) {
+        steps.push({aL:'L'+row, aR:null});   // L foot only
+      } else {
+        steps.push({aL:null,   aR:'R'+row}); // R foot only
+      }
+    }
+
+  } else if (style === 'wave') {
+    // L sweeps fast up left, R climbs independently — wide stagger that narrows
+    [[2,1],[3,1],[4,2],[4,3],[4,3],[4,4],[4,4],[4,4]].forEach(([l,r]) =>
+      steps.push({aL:'L'+l, aR:'R'+r}));
+  }
+
+  // Guarantee both feet at Row 4 on beat 8
+  steps[7] = {aL:'L4', aR:'R4'};
+
+  return {id:'b'+(++_blockSeq), dir:'up', style, steps};
+}
+
+/* Auto-generate BACK version: flip rows (1↔4, 2↔3) */
+function flipBlock(block) {
+  const flip = pad => pad ? (pad[0] + (5 - parseInt(pad[1]))) : null;
+  return {
+    ...block,
+    id:  block.id + '_back',
+    dir: 'back',
+    steps: block.steps.map(s => ({aL: flip(s.aL), aR: flip(s.aR)})),
+  };
+}
+
+const ROUTINES = [
+  // ── SOLO: FOUNDATION ──
+  {
+    id:'climb', name:'Straight Climb', level:'Level 1', type:'solo',
+    desc:'bilateral advance & retreat',
+    steps:[
+      {aL:'L1',aR:'R1'},{aL:'L2',aR:'R2'},{aL:'L3',aR:'R3'},{aL:'L4',aR:'R4'},
+      {aL:'L4',aR:'R4'},{aL:'L3',aR:'R3'},{aL:'L2',aR:'R2'},{aL:'L1',aR:'R1'},
+    ],
+    stages:[
+      // 0 FEEL — 2-row step & rock, lock the rhythm
+      {steps:[{aL:'L1',aR:'R1'},{aL:'L2',aR:'R2'},{aL:'L1',aR:'R1'},{aL:'L2',aR:'R2'},{aL:'L1',aR:'R1'},{aL:'L2',aR:'R2'},{aL:'L1',aR:'R1'},{aL:'L2',aR:'R2'}]},
+      // 1 REACH — push to row 3 and back
+      {steps:[{aL:'L1',aR:'R1'},{aL:'L2',aR:'R2'},{aL:'L3',aR:'R3'},{aL:'L3',aR:'R3'},{aL:'L2',aR:'R2'},{aL:'L1',aR:'R1'},{aL:'L2',aR:'R2'},{aL:'L1',aR:'R1'}]},
+      // 2 TURN — full grid, top turn fires at count 5
+      {steps:[{aL:'L1',aR:'R1'},{aL:'L2',aR:'R2'},{aL:'L3',aR:'R3'},{aL:'L4',aR:'R4'},{aL:'L4',aR:'R4'},{aL:'L3',aR:'R3'},{aL:'L2',aR:'R2'},{aL:'L1',aR:'R1'}]},
+      // 3 FLOW — same steps, bottom turn now fires at count 8
+      {steps:[{aL:'L1',aR:'R1'},{aL:'L2',aR:'R2'},{aL:'L3',aR:'R3'},{aL:'L4',aR:'R4'},{aL:'L4',aR:'R4'},{aL:'L3',aR:'R3'},{aL:'L2',aR:'R2'},{aL:'L1',aR:'R1'}]},
+      // 4 DANCE — same steps, movement cues hidden — muscle memory
+      {steps:[{aL:'L1',aR:'R1'},{aL:'L2',aR:'R2'},{aL:'L3',aR:'R3'},{aL:'L4',aR:'R4'},{aL:'L4',aR:'R4'},{aL:'L3',aR:'R3'},{aL:'L2',aR:'R2'},{aL:'L1',aR:'R1'}]},
+    ]
+  },
+  {
+    id:'rockback', name:'Rock Back', level:'Level 1', type:'solo',
+    desc:'weight shift, 2-row alternating',
+    steps:[
+      {aL:'L1',aR:'R1'},{aL:'L2',aR:'R1'},{aL:'L2',aR:'R2'},{aL:'L1',aR:'R2'},
+      {aL:'L1',aR:'R1'},{aL:'L2',aR:'R1'},{aL:'L2',aR:'R2'},{aL:'L1',aR:'R2'},
+    ],
+    stages:[
+      // 0 FEEL — 2-row stagger: start here, feel the offset rhythm
+      {steps:[{aL:'L1',aR:'R1'},{aL:'L2',aR:'R1'},{aL:'L2',aR:'R2'},{aL:'L1',aR:'R2'},{aL:'L1',aR:'R1'},{aL:'L2',aR:'R1'},{aL:'L2',aR:'R2'},{aL:'L1',aR:'R2'}]},
+      // 1 REACH — extend the stagger to row 3 and back
+      {steps:[{aL:'L1',aR:'R1'},{aL:'L2',aR:'R1'},{aL:'L3',aR:'R2'},{aL:'L2',aR:'R2'},{aL:'L3',aR:'R3'},{aL:'L2',aR:'R3'},{aL:'L1',aR:'R2'},{aL:'L1',aR:'R1'}]},
+      // 2 TURN — full 4-row stagger, top turn fires at count 5
+      {steps:[{aL:'L1',aR:'R1'},{aL:'L2',aR:'R1'},{aL:'L3',aR:'R2'},{aL:'L4',aR:'R3'},{aL:'L4',aR:'R4'},{aL:'L3',aR:'R3'},{aL:'L2',aR:'R2'},{aL:'L2',aR:'R2'}]},
+      // 3 FLOW — same, bottom turn now fires at count 1
+      {steps:[{aL:'L1',aR:'R1'},{aL:'L2',aR:'R1'},{aL:'L3',aR:'R2'},{aL:'L4',aR:'R3'},{aL:'L4',aR:'R4'},{aL:'L3',aR:'R3'},{aL:'L2',aR:'R2'},{aL:'L2',aR:'R2'}]},
+      // 4 DANCE — same steps, level cues hidden — you own the flow
+      {steps:[{aL:'L1',aR:'R1'},{aL:'L2',aR:'R1'},{aL:'L3',aR:'R2'},{aL:'L4',aR:'R3'},{aL:'L4',aR:'R4'},{aL:'L3',aR:'R3'},{aL:'L2',aR:'R2'},{aL:'L2',aR:'R2'}]},
+    ]
+  },
+  // ── SOLO: INTERMEDIATE ──
+  {
+    id:'stagger', name:'Stagger Step', level:'Level 2', type:'solo',
+    desc:'diagonal offset — one step ahead all phrase',
+    steps:[
+      {aL:'L1',aR:'R2'},{aL:'L2',aR:'R1'},{aL:'L2',aR:'R3'},{aL:'L3',aR:'R2'},
+      {aL:'L3',aR:'R4'},{aL:'L4',aR:'R3'},{aL:'L3',aR:'R4'},{aL:'L2',aR:'R3'},
+    ]
+  },
+  {
+    id:'lanelock', name:'Lane Lock', level:'Level 2', type:'solo',
+    desc:'one foot anchors, one foot climbs',
+    steps:[
+      {aL:'L1',aR:'R1'},{aL:'L2',aR:'R1'},{aL:'L3',aR:'R1'},{aL:'L4',aR:'R1'},
+      {aL:'L4',aR:'R2'},{aL:'L4',aR:'R3'},{aL:'L4',aR:'R4'},{aL:'L1',aR:'R4'},
+    ]
+  },
+  // ── SOLO: LADDER DRILL SERIES ──
+  {
+    id:'icky', name:'Icky', level:'Level 2', type:'solo',
+    desc:'L foot crosses into R lane — icky shuffle pattern',
+    steps:[
+      {aL:'L1', aR:'R1'},  // wide start
+      {aL:'R2', aR:'R1'},  // L crosses into R lane (teal on R2, coral stays R1)
+      {aL:'L2', aR:'R2'},  // L uncrosses, settle row 2
+      {aL:'R3', aR:'R2'},  // L crosses R3
+      {aL:'L3', aR:'R3'},  // L uncrosses, row 3
+      {aL:'R4', aR:'R3'},  // L crosses R4
+      {aL:'L4', aR:'R4'},  // settle at top
+      {aL:'L4', aR:'R4'},  // hold
+    ]
+  },
+  {
+    id:'carioca', name:'Carioca', level:'Level 3', type:'solo',
+    desc:'hip rotation — lanes fully swap every other beat',
+    steps:[
+      {aL:'L1', aR:'R1'},  // normal
+      {aL:'R2', aR:'L2'},  // SWAPPED (teal R, coral L — hip rotates)
+      {aL:'L3', aR:'R3'},  // normal
+      {aL:'R4', aR:'L4'},  // SWAPPED
+      {aL:'L4', aR:'R4'},  // normal, settle top
+      {aL:'R3', aR:'L3'},  // SWAPPED, descend
+      {aL:'L2', aR:'R2'},  // normal
+      {aL:'R1', aR:'L1'},  // SWAPPED, row 1
+    ]
+  },
+  {
+    id:'skiprow', name:'Skip Row', level:'Level 3', type:'solo',
+    desc:'explosive skip — alternating rows 1&3 then 2&4',
+    steps:[
+      {aL:'L1',aR:'R1'},{aL:'L3',aR:'R3'},{aL:'L1',aR:'R1'},{aL:'L3',aR:'R3'},
+      {aL:'L2',aR:'R2'},{aL:'L4',aR:'R4'},{aL:'L2',aR:'R2'},{aL:'L4',aR:'R4'},
+    ]
+  },
+  {
+    id:'crosstrain', name:'Cross Train', level:'Level 3', type:'solo',
+    desc:'full lane crossover advance — lateral hip power',
+    steps:[
+      {aL:'L1', aR:'R2'},
+      {aL:'R1', aR:'L2'},  // cross — teal to R, coral to L
+      {aL:'L2', aR:'R3'},
+      {aL:'R2', aR:'L3'},  // cross advance
+      {aL:'L3', aR:'R4'},
+      {aL:'R3', aR:'L4'},  // cross at top
+      {aL:'L4', aR:'R4'},  // settle
+      {aL:'L3', aR:'R3'},  // step back
+    ]
+  },
+  // ── SOLO: ADVANCED ──
+  {
+    id:'pushpull', name:'Push & Pull', level:'Level 3', type:'solo',
+    desc:'lead foot pulls trail through each row',
+    steps:[
+      {aL:'L1',aR:'R2'},{aL:'L1',aR:'R1'},{aL:'L2',aR:'R3'},{aL:'L2',aR:'R2'},
+      {aL:'L3',aR:'R4'},{aL:'L3',aR:'R3'},{aL:'L4',aR:'R4'},{aL:'L3',aR:'R3'},
+    ]
+  },
+  {
+    id:'riverdance', name:'River Dance', level:'Level 4', type:'solo',
+    desc:'rapid single-foot alternating through all 4 rows',
+    steps:[
+      {aL:'L1', aR:null},
+      {aL:null,  aR:'R1'},
+      {aL:'L2', aR:null},
+      {aL:null,  aR:'R2'},
+      {aL:'L3', aR:null},
+      {aL:null,  aR:'R3'},
+      {aL:'L4', aR:null},
+      {aL:null,  aR:'R4'},
+    ]
+  },
+  // ── PARTNER ──
+  {
+    id:'trade', name:'The Trade', level:'Partner', type:'partner',
+    desc:'A starts near, B starts far — collision-free pass',
+    steps:[
+      {aL:'L1',aR:'R1',bL:'L4',bR:'R4'},{aL:'L1',aR:'R1',bL:'L4',bR:'R4'},
+      {aL:'L2',aR:null,bL:null,bR:'R3'},{aL:'L2',aR:null,bL:null,bR:'R3'},
+      {aL:null,aR:'R3',bL:'L2',bR:null},{aL:null,aR:'R3',bL:'L2',bR:null},
+      {aL:'L4',aR:'R4',bL:'L1',bR:'R1'},{aL:'L4',aR:'R4',bL:'L1',bR:'R1'},
+    ]
+  },
+  {
+    id:'mirror', name:'Mirror', level:'Partner', type:'partner',
+    desc:'both athletes mirror the same pattern simultaneously',
+    steps:[
+      {aL:'L1',aR:'R1',bL:'L1',bR:'R1'},{aL:'L2',aR:'R2',bL:'L2',bR:'R2'},
+      {aL:'L3',aR:'R3',bL:'L3',bR:'R3'},{aL:'L4',aR:'R4',bL:'L4',bR:'R4'},
+      {aL:'L3',aR:'R3',bL:'L3',bR:'R3'},{aL:'L2',aR:'R2',bL:'L2',bR:'R2'},
+      {aL:'L1',aR:'R1',bL:'L1',bR:'R1'},{aL:'L2',aR:'R2',bL:'L2',bR:'R2'},
+    ]
+  },
+  {
+    id:'callreact', name:'Call & React', level:'Partner', type:'partner',
+    desc:'B follows A with a 2-beat delay — reaction drill',
+    steps:[
+      {aL:'L1',aR:'R1',bL:'L3',bR:'R3'},{aL:'L2',aR:'R2',bL:'L1',bR:'R1'},
+      {aL:'L3',aR:'R3',bL:'L2',bR:'R2'},{aL:'L4',aR:'R4',bL:'L3',bR:'R3'},
+      {aL:'L3',aR:'R3',bL:'L4',bR:'R4'},{aL:'L2',aR:'R2',bL:'L3',bR:'R3'},
+      {aL:'L1',aR:'R1',bL:'L2',bR:'R2'},{aL:'L2',aR:'R2',bL:'L1',bR:'R1'},
+    ]
+  },
+  // ── EXPERT KNEE DRILLS (PRO) — cycles auto-advance each 8-count ──
+  {
+    id:'kneemarch', name:'Knee March', level:'Level 5', type:'solo',
+    desc:'alternating high knee march — cycles: up / down / quick fire',
+    cycles:[
+      // Cycle 1: March up rows 1→4
+      [
+        {aL:'L1', aR:null,  hk:'R'},
+        {aL:'L2', aR:null,  hk:'R'},
+        {aL:null,  aR:'R2', hk:'L'},
+        {aL:null,  aR:'R3', hk:'L'},
+        {aL:'L3', aR:null,  hk:'R'},
+        {aL:'L4', aR:null,  hk:'R'},
+        {aL:null,  aR:'R4', hk:'L'},
+        {aL:null,  aR:'R3', hk:'L'},
+      ],
+      // Cycle 2: March down rows 4→1
+      [
+        {aL:'L4', aR:null,  hk:'R'},
+        {aL:null,  aR:'R4', hk:'L'},
+        {aL:'L3', aR:null,  hk:'R'},
+        {aL:null,  aR:'R3', hk:'L'},
+        {aL:'L2', aR:null,  hk:'R'},
+        {aL:null,  aR:'R2', hk:'L'},
+        {aL:'L1', aR:null,  hk:'R'},
+        {aL:null,  aR:'R1', hk:'L'},
+      ],
+      // Cycle 3: Quick fire rows 1–2
+      [
+        {aL:'L1', aR:null,  hk:'R'},
+        {aL:null,  aR:'R1', hk:'L'},
+        {aL:'L2', aR:null,  hk:'R'},
+        {aL:null,  aR:'R2', hk:'L'},
+        {aL:'L1', aR:null,  hk:'R'},
+        {aL:null,  aR:'R1', hk:'L'},
+        {aL:'L2', aR:null,  hk:'R'},
+        {aL:null,  aR:'R2', hk:'L'},
+      ],
+    ]
+  },
+  {
+    id:'kneedrive', name:'Knee Drive', level:'Level 5', type:'solo',
+    desc:'step and drive — cycles: right drive / left drive / alternating',
+    cycles:[
+      // Cycle 1: Right knee drives forward
+      [
+        {aL:'L1', aR:'R1'},
+        {aL:'L1', aR:null,  hk:'R'},
+        {aL:'L1', aR:'R2'},
+        {aL:'L2', aR:null,  hk:'R'},
+        {aL:'L2', aR:'R3'},
+        {aL:'L3', aR:null,  hk:'R'},
+        {aL:'L3', aR:'R4'},
+        {aL:null,  aR:'R4', hk:'L'},
+      ],
+      // Cycle 2: Left knee drives forward
+      [
+        {aL:'L1', aR:'R1'},
+        {aL:null,  aR:'R1', hk:'L'},
+        {aL:'L2', aR:'R1'},
+        {aL:null,  aR:'R2', hk:'L'},
+        {aL:'L3', aR:'R2'},
+        {aL:null,  aR:'R3', hk:'L'},
+        {aL:'L4', aR:'R3'},
+        {aL:'L4', aR:null,  hk:'R'},
+      ],
+      // Cycle 3: Alternating knee drives up ladder
+      [
+        {aL:'L1', aR:'R1'},
+        {aL:'L1', aR:null,  hk:'R'},
+        {aL:'L2', aR:'R2'},
+        {aL:null,  aR:'R2', hk:'L'},
+        {aL:'L3', aR:'R3'},
+        {aL:'L3', aR:null,  hk:'R'},
+        {aL:'L4', aR:'R4'},
+        {aL:null,  aR:'R4', hk:'L'},
+      ],
+    ]
+  },
+  {
+    id:'ickykick', name:'Icky Kick', level:'Level 5', type:'solo',
+    desc:'icky shuffle — cycles: L kick / R kick / double kick',
+    cycles:[
+      // Cycle 1: L crosses, L knee at top
+      [
+        {aL:'L1', aR:'R1'},
+        {aL:'R2', aR:'R1'},
+        {aL:'L2', aR:'R2'},
+        {aL:'R3', aR:'R2'},
+        {aL:'L3', aR:'R3'},
+        {aL:'R4', aR:'R3'},
+        {aL:null,  aR:'R4', hk:'L'},
+        {aL:'L4', aR:'R4'},
+      ],
+      // Cycle 2: R crosses, R knee at top
+      [
+        {aL:'L1', aR:'R1'},
+        {aL:'L1', aR:'L2'},
+        {aL:'L2', aR:'R2'},
+        {aL:'L2', aR:'L3'},
+        {aL:'L3', aR:'R3'},
+        {aL:'L3', aR:'L4'},
+        {aL:'L4', aR:null,  hk:'R'},
+        {aL:'L4', aR:'R4'},
+      ],
+      // Cycle 3: Both directions, knee at each end
+      [
+        {aL:'R2', aR:'R1'},
+        {aL:'L2', aR:'R2'},
+        {aL:null,  aR:'R2', hk:'L'},
+        {aL:'L2', aR:'R2'},
+        {aL:'L2', aR:'L3'},
+        {aL:'L3', aR:'R3'},
+        {aL:'L3', aR:null,  hk:'R'},
+        {aL:'L3', aR:'R3'},
+      ],
+    ]
+  },
+];
+
+/* ──────────────────────────────────────────
+   STATE
+────────────────────────────────────────── */
+let bpm = 110, level = 1, mode = 'solo', routine = ROUTINES[0];
+let beat = 0, round = 1, cueCount = 0;
+let running = false, paused = false;
+let beatClock = null, timerInt = null, sessStart = null;
+let audioCtx = null;
+let activeSongEl = null;
+
+// Interval progression
+let workSetDuration = 60;  // seconds per work set
+let quickBreakBeats = 32;  // beats in quick break
+let restDuration = 30;     // seconds for full rest
+let currentSet = 1;        // 1 or 2 within each 2-set cycle
+let workBeats = 0;         // beats elapsed in current work set
+let breakMode = null;      // null | 'quick' | 'full'
+let quickLeft = 0;         // beats remaining in quick break
+let restRemain = 0;        // seconds remaining in full rest
+let restCountInt = null;   // interval for rest countdown
+
+// Stage progression (Simon-style 5-stage learning)
+let currentStage   = 0;    // 0 = FEEL … 4 = DANCE
+let pendingStageUp = false; // queued advance fires at next beat 0
+let currentCycle   = 0;    // phrase cycle index for multi-cycle routines
+
+// Block library sequence (choreographer-built session)
+let blockSequence  = [];   // array of block objects for the session
+let currentBlockIdx= 0;    // which block we're currently on
+
+// ── CHARACTER VIEW ──────────────────────────────
+// ViewBox 300×280. Hip L:(142,76) Hip R:(158,76)
+// Rows: 1(near/bottom)=y258, 2=y213, 3=y168, 4(far/top)=y123
+const CHAR_POS = {
+  L1:{x:96,y:258},  L2:{x:100,y:213}, L3:{x:104,y:168}, L4:{x:108,y:123},
+  R1:{x:204,y:258}, R2:{x:200,y:213}, R3:{x:196,y:168}, R4:{x:192,y:123},
+  HKL:{x:130,y:90, kx:114,ky:48},  // left high knee: foot at hip height, knee above
+  HKR:{x:170,y:90, kx:186,ky:48},  // right high knee
+};
+const CHAR_HIP_L = {x:142,y:76};
+const CHAR_HIP_R = {x:158,y:76};
+
+// Lerp state: k=knee, f=foot, t=target
+let charLegL = {kx:119,ky:167,fx:96,fy:258, tkx:119,tky:167,tfx:96,tfy:258};
+let charLegR = {kx:181,ky:167,fx:204,fy:258, tkx:181,tky:167,tfx:204,tfy:258};
+let charArmL = {x:95,y:68,tx:95,ty:68};
+let charArmR = {x:205,y:68,tx:205,ty:68};
+let lastCharPosL = CHAR_POS.L1;
+let lastCharPosR = CHAR_POS.R1;
+let sessionView = 'char';
+
+/* ──────────────────────────────────────────
+   STAGE SYSTEM
+   5 universal stages — build complexity like Simon Says:
+   0 FEEL  — base movement, no turn cues
+   1 REACH — wider range, still no turn cues
+   2 TURN  — top turn cue fires
+   3 FLOW  — both top & bottom turns fire
+   4 DANCE — all cues except turn hidden; muscle memory
+────────────────────────────────────────── */
+const STAGE_NAMES = ['FEEL','REACH','TURN','FLOW','DANCE'];
+const STAGE_DESCS = [
+  'Lock the base rhythm',
+  'Push your range',
+  'Jump turn at the top',
+  'Both ends turn — full phrase',
+  'Muscle memory — you own it',
+];
+
+/* ──────────────────────────────────────────
+   SESSION CHOREOGRAPHER
+   Builds a song-length sequence from the block
+   library. Energy arc: rest → build → peak → cool.
+   Filters by tier difficulty. Never repeats the
+   same block twice in a row.
+────────────────────────────────────────── */
+/* ──────────────────────────────────────────
+   Level 1 session builder — growing phrase.
+
+   Pick 4 blocks from the pool. Build the session
+   as a Simon Says layering structure:
+   Phase 1: A↑ A↓             (×4 reps = 64 beats)
+   Phase 2: A+B↑ A+B↓         (×3 reps = 96 beats)
+   Phase 3: A+B+C↑ A+B+C↓     (×2 reps = 96 beats)
+   Phase 4: A+B+C+D↑ A+B+C+D↓ (×2 reps = 128 beats)
+   Total ≈ 384 beats @ 110 BPM ≈ 3.5 min (one song).
+────────────────────────────────────────── */
+function buildLevel1Session(maxDiff) {
+  const d = Math.min(maxDiff, 4);
+
+  // Generate 4 blocks with UNIQUE styles so each phrase feels different
+  const usedStyles = new Set();
+  const freshBlock = (diff) => {
+    let b, attempts = 0;
+    do { b = generateBlock(diff); attempts++; } while (usedStyles.has(b.style) && attempts < 20);
+    usedStyles.add(b.style);
+    return {...b, dir:'up'};
+  };
+  const A_up = freshBlock(Math.max(1, d - 1)); // simpler anchor
+  const B_up = freshBlock(d);
+  const C_up = freshBlock(d);
+  const D_up = freshBlock(d);
+  const A_dn = flipBlock(A_up);
+  const B_dn = flipBlock(B_up);
+  const C_dn = flipBlock(C_up);
+  const D_dn = flipBlock(D_up);
+
+  // Phrase counter resets 1-N for EACH direction independently
+  // so UP always counts 1…N and BACK also counts 1…N.
+  // The direction arrow tells which way you're going.
+  const tag = (b, n) => ({...b, phraseNum:n});
+
+  const seq = [];
+  // Phase 1 — 4 reps of [A↑ A↓] — count: 1 2  (cycle of 2)
+  for (let i = 0; i < 4; i++) {
+    seq.push(tag(A_up, 1));
+    seq.push(tag(A_dn, 2));
+  }
+  // Phase 2 — 3 reps of [A↑ B↑ A↓ B↓] — count: 1 2 3 4  (cycle of 4)
+  for (let i = 0; i < 3; i++) {
+    seq.push(tag(A_up, 1)); seq.push(tag(B_up, 2));
+    seq.push(tag(A_dn, 3)); seq.push(tag(B_dn, 4));
+  }
+  // Phase 3 — 2 reps of [A↑ B↑ C↑ A↓ B↓ C↓] — count: 1 2 3 4 5 6  (cycle of 6)
+  for (let i = 0; i < 2; i++) {
+    seq.push(tag(A_up, 1)); seq.push(tag(B_up, 2)); seq.push(tag(C_up, 3));
+    seq.push(tag(A_dn, 4)); seq.push(tag(B_dn, 5)); seq.push(tag(C_dn, 6));
+  }
+  // Phase 4 — 2 reps of [A↑ B↑ C↑ D↑ A↓ B↓ C↓ D↓] — count: 1 2 3 4 5 6 7 8  (cycle of 8)
+  for (let i = 0; i < 2; i++) {
+    seq.push(tag(A_up, 1)); seq.push(tag(B_up, 2));
+    seq.push(tag(C_up, 3)); seq.push(tag(D_up, 4));
+    seq.push(tag(A_dn, 5)); seq.push(tag(B_dn, 6));
+    seq.push(tag(C_dn, 7)); seq.push(tag(D_dn, 8));
+  }
+  return seq;
+}
+
+function getCurrentSteps() {
+  // Block sequence mode — used when session is active
+  if (blockSequence.length > 0) {
+    const block = blockSequence[currentBlockIdx % blockSequence.length];
+    if (block) return block.steps;
+  }
+  // Legacy fallback for named routine selection
+  if (routine.stages) {
+    const idx = Math.min(currentStage, routine.stages.length - 1);
+    return routine.stages[idx].steps;
+  }
+  if (routine.cycles) {
+    return routine.cycles[currentCycle % routine.cycles.length];
+  }
+  return routine.steps;
+}
+
+function getPreviewSteps(r) {
+  return r.stages ? r.stages[0].steps : r.steps;
+}
+
+function getCueForCurrentStage(beatIdx) {
+  if (currentStage >= 4) return null; // Stage 4 DANCE — no level cues
+  return getCue(beatIdx, level);
+}
+
+function queueStageAdvance() {
+  if (blockSequence.length > 0) {
+    // Block mode: jump to beat 7 of current phrase so it wraps to next block naturally
+    beat = 7;
+    syncSetInfo();
+    return;
+  }
+  if (currentStage < 4) pendingStageUp = true;
+}
+
+function updateStageUI() {
+  const pips = document.getElementById('stagePips');
+  if (pips) {
+    pips.innerHTML = '';
+    for (let i = 0; i < 5; i++) {
+      const d = document.createElement('div');
+      d.className = 'sp' + (i < currentStage ? ' done' : '') + (i === currentStage ? ' on' : '');
+      pips.appendChild(d);
+    }
+  }
+  const lbl = document.getElementById('stageLbl');
+  if (lbl) lbl.textContent = STAGE_NAMES[currentStage] + ' · ' + STAGE_DESCS[currentStage];
+  const btn = document.getElementById('stageNextBtn');
+  if (btn) {
+    // In block mode the button always skips to next block — never disabled
+    if (blockSequence.length > 0) {
+      btn.disabled = false;
+      const block = blockSequence[currentBlockIdx % blockSequence.length];
+      btn.textContent = block && block.dir === 'back' ? 'SKIP ↓' : 'SKIP ↑';
+    } else {
+      btn.disabled = currentStage >= 4;
+      btn.textContent = currentStage < 4 ? 'NEXT →' : 'DANCE ✓';
+    }
+  }
+}
+
+/* ──────────────────────────────────────────
+   INIT
+────────────────────────────────────────── */
+function init() {
+  buildTierCards();
+  buildIntervalUI();
+  buildLevels();
+  buildCards();
+  buildBeatTrack();
+  buildGrid();
+  updateGoBtn();
+}
+
+/* ──────────────────────────────────────────
+   INTERVAL CONTROLS
+────────────────────────────────────────── */
+const WORK_OPTS = [{label:'30s',secs:30},{label:'1 min',secs:60},{label:'2 min',secs:120},{label:'3 min',secs:180}];
+const BREAK_OPTS = [{label:'8',beats:8},{label:'16',beats:16},{label:'32',beats:32},{label:'48',beats:48}];
+const REST_OPTS  = [15,30,45,60];
+
+function buildIntervalUI() {
+  buildFlowRow();
+  buildOptRow('workOpts',  WORK_OPTS,  o => o.secs,  o => o.label, workSetDuration,  v => { workSetDuration  = v; buildIntervalUI(); });
+  buildOptRow('breakOpts', BREAK_OPTS, o => o.beats, o => o.label, quickBreakBeats, v => { quickBreakBeats = v; buildIntervalUI(); });
+  buildOptRow('restOpts',  REST_OPTS.map(s=>({secs:s})), o => o.secs, o => o.secs+'s', restDuration, v => { restDuration = v; buildIntervalUI(); });
+}
+
+function buildOptRow(id, options, valFn, labelFn, current, onSelect) {
+  const container = document.getElementById(id);
+  container.innerHTML = '';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'ro' + (valFn(opt) === current ? ' on' : '');
+    btn.textContent = labelFn(opt);
+    btn.onclick = () => onSelect(valFn(opt));
+    container.appendChild(btn);
+  });
+}
+
+function buildFlowRow() {
+  const el = document.getElementById('flowRow');
+  const wLabel = (WORK_OPTS.find(o => o.secs === workSetDuration) || {label: workSetDuration+'s'}).label.toUpperCase();
+  el.innerHTML = `
+    <span class="fp work">${wLabel}</span>
+    <span class="fa">→</span>
+    <span class="fp brk">${quickBreakBeats} BEATS</span>
+    <span class="fa">→</span>
+    <span class="fp work">${wLabel}</span>
+    <span class="fa">→</span>
+    <span class="fp rst">REST ${restDuration}s</span>
+  `;
+}
+
+/* ──────────────────────────────────────────
+   SONG BROWSER
+────────────────────────────────────────── */
+function buildSongs() {
+  const container = document.getElementById('songGroups');
+  container.innerHTML = '';
+
+  SONG_GROUPS.forEach(grp => {
+    const songs = SONGS.filter(grp.test);
+    if (!songs.length) return;
+
+    const gDiv = document.createElement('div');
+    gDiv.className = 'sg-group';
+    const hd = document.createElement('div');
+    hd.className = 'sg-hd';
+    hd.textContent = grp.label;
+    gDiv.appendChild(hd);
+
+    const scroll = document.createElement('div');
+    scroll.className = 'sg-scroll';
+    const row = document.createElement('div');
+    row.className = 'sg-row';
+
+    songs.forEach(s => {
+      const card = document.createElement('div');
+      card.className = 'sc';
+      const q = encodeURIComponent(s.title + ' ' + s.artist);
+      card.innerHTML = `
+        <div class="sc-bpm">${s.bpm}</div>
+        <div class="sc-title">${s.title}</div>
+        <div class="sc-artist">${s.artist}</div>
+        <a class="sc-slink" href="https://open.spotify.com/search/${q}" target="_blank" onclick="event.stopPropagation()">
+          <span class="sc-dot"></span>Spotify
+        </a>
+      `;
+      card.addEventListener('click', () => setSongBpm(s.bpm, card));
+      row.appendChild(card);
+    });
+
+    scroll.appendChild(row);
+    gDiv.appendChild(scroll);
+    container.appendChild(gDiv);
+  });
+}
+
+function setSongBpm(val, el) {
+  bpm = val;
+  document.getElementById('bpmDigits').textContent = bpm;
+  document.getElementById('sessBpm').textContent = bpm + ' BPM';
+  if (activeSongEl) activeSongEl.classList.remove('on');
+  activeSongEl = el;
+  el.classList.add('on');
+  if (running && !paused) restartClock();
+}
+
+/* ──────────────────────────────────────────
+   BPM
+────────────────────────────────────────── */
+function stepBpm(d) {
+  bpm = Math.max(60, Math.min(200, bpm + d));
+  document.getElementById('bpmDigits').textContent = bpm;
+  document.getElementById('sessBpm').textContent = bpm + ' BPM';
+  // Deselect song card when manually adjusting
+  if (activeSongEl) {
+    activeSongEl.classList.remove('on');
+    activeSongEl = null;
+  }
+  if (running && !paused && breakMode !== 'full') restartClock();
+}
+
+/* ──────────────────────────────────────────
+   LEVELS UI
+────────────────────────────────────────── */
+function buildLevels() {
+  const list = document.getElementById('levelList');
+  if (!list) return;
+  list.innerHTML = '';
+  // Only show levels allowed for current tier
+  const allowed = TIER_CONFIG[currentTier].allowedLevels;
+  if (!allowed.includes(level)) level = allowed[0];
+  const filtered = LEVELS.filter(lv => allowed.includes(lv.id));
+  filtered.forEach(lv => {
+    const item = document.createElement('div');
+    item.className = 'lvl-item' + (lv.id === level ? ' on' : '');
+    item.onclick = () => { level = lv.id; buildLevels(); };
+    item.innerHTML = `
+      <div class="lvl-num">${lv.id}</div>
+      <div class="lvl-text">
+        <div class="lvl-name">${lv.name}</div>
+        <div class="lvl-desc">${lv.desc}</div>
+      </div>
+      <div class="lvl-badge">${lv.badge}</div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+/* ──────────────────────────────────────────
+   MODE
+────────────────────────────────────────── */
+function setMode(m) {
+  mode = m;
+  ['solo','partner'].forEach(k =>
+    document.getElementById('mBtn-' + k).classList.toggle('on', k === m)
+  );
+  buildCards();
+  updateLegend();
+}
+
+function updateLegend() {
+  const leg = document.getElementById('legend');
+  if (mode === 'partner') {
+    leg.innerHTML = `
+      <div class="leg"><div class="leg-dot" style="background:var(--teal)"></div>A Left</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--coral)"></div>A Right</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--amber)"></div>Person B</div>
+    `;
+  } else {
+    leg.innerHTML = `
+      <div class="leg"><div class="leg-dot" style="background:var(--teal)"></div>Left foot</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--coral)"></div>Right foot</div>
+    `;
+  }
+}
+
+/* ──────────────────────────────────────────
+   ROUTINE CARDS
+────────────────────────────────────────── */
+function buildCards() {
+  const scroll = document.getElementById('rscroll');
+  scroll.innerHTML = '';
+  // Filter by tier-allowed routine IDs (mode irrelevant — tier gates which routines show)
+  const tierIds = TIER_CONFIG[currentTier].routineIds;
+  const vis = ROUTINES.filter(r => tierIds.includes(r.id));
+  if (!vis.includes(routine)) routine = vis[0];
+
+  vis.forEach(r => {
+    // Build mini grid preview from Stage 0 steps
+    const prevSteps = getPreviewSteps(r);
+    const lP = new Set(), rP = new Set(), bP = new Set();
+    prevSteps.forEach(s => {
+      if (s.aL) lP.add(s.aL);
+      if (s.aR) rP.add(s.aR);
+      if (s.bL) bP.add(s.bL);
+      if (s.bR) bP.add(s.bR);
+    });
+    // Handle crossover pads: if aL is in R col, treat as teal on R col
+    prevSteps.forEach(s => {
+      if (s.aL && s.aL.startsWith('R')) rP.add(s.aL); // teal crossing
+      if (s.aR && s.aR.startsWith('L')) lP.add(s.aR); // coral crossing
+    });
+    let mini = '<div class="rmini">';
+    for (let row = 4; row >= 1; row--) {
+      const lHasL = lP.has(`L${row}`);
+      const lHasR = rP.has(`L${row}`);
+      const rHasR = rP.has(`R${row}`);
+      const rHasL = lP.has(`R${row}`);
+      const bL = bP.has(`L${row}`), bR = bP.has(`R${row}`);
+      const lc = bL ? 'am' : (lHasL ? 'tl' : (lHasR ? 'cr' : ''));
+      const rc = bR ? 'am' : (rHasR ? 'cr' : (rHasL ? 'tl' : ''));
+      mini += `<div class="rmc ${lc}"></div><div class="rmc ${rc}"></div>`;
+    }
+    mini += '</div>';
+
+    const card = document.createElement('div');
+    card.className = 'rc' + (r === routine ? ' on' : '');
+    card.onclick = () => {
+      routine = r;
+      currentStage = TIER_CONFIG[currentTier].startStage;
+      // Auto-set mode to match routine type
+      if (r.type === 'partner') setMode('partner');
+      buildCards();
+    };
+    card.innerHTML = `
+      <div class="rc-name">${r.name}</div>
+      <div class="rc-lvl">${r.level}</div>
+      <div class="rc-desc">${r.desc}</div>
+      <div class="rc-tag ${r.type}">${r.type === 'partner' ? '2 People' : 'Solo'}</div>
+      ${mini}
+    `;
+    scroll.appendChild(card);
+  });
+}
+
+/* ──────────────────────────────────────────
+   BEAT TRACK
+────────────────────────────────────────── */
+function buildBeatTrack() {
+  const t = document.getElementById('beatTrack');
+  t.innerHTML = '';
+  for (let i = 0; i < 8; i++) {
+    const p = document.createElement('div');
+    p.className = 'bp'; p.id = 'bp' + i;
+    t.appendChild(p);
+  }
+}
+function tickBt(b) {
+  const isTurn = getTurnType(b) !== null;
+  const dir    = getPhaseDir(b);
+  for (let i = 0; i < 8; i++) {
+    const p = document.getElementById('bp' + i);
+    p.className = 'bp';
+    if (i === b) {
+      if (isTurn)        p.classList.add('turn');
+      else if (b === 0)  p.classList.add('acc');
+      else if (dir === 'up')   p.classList.add('asc');
+      else if (dir === 'down') p.classList.add('dsc');
+      else               p.classList.add('lit');
+    }
+  }
+}
+
+/* ──────────────────────────────────────────
+   GRID
+────────────────────────────────────────── */
+function buildGrid() {
+  const g = document.getElementById('theGrid');
+  g.innerHTML = '';
+  for (let row = 4; row >= 1; row--) {
+    ['L','R'].forEach(col => {
+      const id = `${col}${row}`;
+      const pad = document.createElement('div');
+      pad.className = 'pad'; pad.id = 'p-' + id;
+      pad.innerHTML = `<div class="pad-lbl">${id}</div><div class="pad-cue" id="pc-${id}"></div>`;
+      g.appendChild(pad);
+    });
+  }
+}
+
+function clearGrid() {
+  document.querySelectorAll('.pad').forEach(p => { p.className = 'pad'; });
+  document.querySelectorAll('.pad-cue').forEach(c => { c.textContent = ''; });
+}
+
+let cueHideTimer = null;
+function paintStep(idx, isCurrent, cue) {
+  const s = getCurrentSteps()[idx];
+  if (!s) return;
+  const isP = mode === 'partner' && routine.type === 'partner';
+  const cueLabel = isCurrent && cue ? cue.label : null;
+
+  const add = (padId, cls, label) => {
+    if (!padId) return;
+    const el = document.getElementById('p-' + padId);
+    if (!el) return;
+    el.classList.add(cls);
+    if (isCurrent && label) {
+      const cueEl = document.getElementById('pc-' + padId);
+      if (cueEl) cueEl.textContent = label;
+      if (cls === 'aL' || cls === 'aR' || cls === 'aP') el.classList.add('double-cue');
+    }
+  };
+
+  if (isCurrent) {
+    add(s.aL, 'aL', cueLabel);
+    add(s.aR, 'aR', cueLabel);
+    if (isP) { add(s.bL, 'aP', cueLabel); add(s.bR, 'aP', cueLabel); }
+  } else {
+    add(s.aL, 'nL', null);
+    add(s.aR, 'nR', null);
+    if (isP) { add(s.bL, 'nP', null); add(s.bR, 'nP', null); }
+  }
+}
+
+/* ──────────────────────────────────────────
+   CUE DISPLAY
+────────────────────────────────────────── */
+function showCue(cue) {
+  const inner = document.getElementById('cueInner');
+  const icon  = document.getElementById('cueIcon');
+  const text  = document.getElementById('cueText');
+  if (!cue) { inner.classList.remove('show'); return; }
+  icon.textContent = cue.icon;
+  text.textContent = cue.label;
+  inner.classList.add('show');
+  clearTimeout(cueHideTimer);
+  cueHideTimer = setTimeout(() => inner.classList.remove('show'), (60000 / bpm) * 0.72);
+}
+
+/* ──────────────────────────────────────────
+   TURN DETECTION & DIRECTION SYSTEM
+   Auto-detects turnaround points at top (Row 4)
+   and bottom (Row 1) for full-grid routines.
+────────────────────────────────────────── */
+
+// Highest row touched in a single step
+function getMaxRow(step) {
+  if (!step) return 0;
+  let max = 0;
+  ['aL','aR','bL','bR'].forEach(k => {
+    if (step[k]) { const r = parseInt(step[k][1]); if (r > max) max = r; }
+  });
+  return max;
+}
+
+// Row range across the current stage's steps
+function getRoutineRowRange() {
+  const steps = getCurrentSteps();
+  let top = 0, bot = 5;
+  steps.forEach(s => {
+    const mr = getMaxRow(s);
+    if (mr > top) top = mr;
+    ['aL','aR','bL','bR'].forEach(k => {
+      if (s[k]) { const r = parseInt(s[k][1]); if (r < bot) bot = r; }
+    });
+  });
+  return {top, bot: bot === 5 ? 1 : bot};
+}
+
+// Travel direction on this beat: 'up' | 'down' | 'hold'
+function getPhaseDir(beatIdx) {
+  const steps = getCurrentSteps();
+  const cur  = getMaxRow(steps[beatIdx]);
+  const next = getMaxRow(steps[(beatIdx + 1) % 8]);
+  if (next > cur) return 'up';
+  if (next < cur) return 'down';
+  return 'hold';
+}
+
+// Detect turn type at this beat: 'top' | 'bottom' | null
+// Stage 0-1: no turn cues (learning the base)
+// Stage 2+:  top turn fires when reaching the top row
+// Stage 3+:  bottom turn fires too — full bidirectional phrase
+function getTurnType(beatIdx) {
+  if (currentStage < 2) return null;
+  const steps = getCurrentSteps();
+  const {top, bot} = getRoutineRowRange();
+  if (top < 2) return null; // pattern stays too flat for turn cues
+  const cur  = getMaxRow(steps[beatIdx]);
+  const next = getMaxRow(steps[(beatIdx + 1) % 8]);
+  const prev = getMaxRow(steps[(beatIdx - 1 + 8) % 8]);
+  if (cur === top && next < top) return 'top';
+  if (currentStage >= 3 && cur === bot && prev > bot) return 'bottom';
+  return null;
+}
+
+// Returns a cue if this beat should fire a JUMP TURN — overrides level cues
+function getAutoTurnCue(beatIdx) {
+  const t = getTurnType(beatIdx);
+  if (!t) return null;
+  return {
+    icon: t === 'top' ? '↩' : '↪',
+    label: 'JUMP TURN',
+    isT: true,
+  };
+}
+
+/* ──────────────────────────────────────────
+   CHARACTER ANIMATION
+────────────────────────────────────────── */
+function setSessionView(v) {
+  sessionView = v;
+  document.getElementById('charArea').style.display = v==='char' ? 'flex' : 'none';
+  document.getElementById('gridArea').style.display = v==='grid' ? 'flex' : 'none';
+  document.getElementById('vt-char').classList.toggle('on', v==='char');
+  document.getElementById('vt-grid').classList.toggle('on', v==='grid');
+}
+
+function getCharKnee(hip, pos, isHK) {
+  if (isHK) return {x:pos.kx, y:pos.ky};
+  return {x:(hip.x+pos.x)/2, y:(hip.y+pos.y)/2};
+}
+
+function updateCharacter(step) {
+  const hk = step ? step.hk : null;
+  const isHKL = hk === 'L';
+  const isHKR = hk === 'R';
+
+  // Resolve foot positions
+  let posL = isHKL ? CHAR_POS.HKL
+           : (step && step.aL ? (CHAR_POS[step.aL] || lastCharPosL) : lastCharPosL);
+  let posR = isHKR ? CHAR_POS.HKR
+           : (step && step.aR ? (CHAR_POS[step.aR] || lastCharPosR) : lastCharPosR);
+  lastCharPosL = posL;
+  lastCharPosR = posR;
+
+  // Move foot circles via CSS transform
+  const fgl = document.getElementById('char-fgl');
+  const fgr = document.getElementById('char-fgr');
+  if (fgl) fgl.style.transform = `translate(${posL.x}px,${posL.y}px)`;
+  if (fgr) fgr.style.transform = `translate(${posR.x}px,${posR.y}px)`;
+
+  // Set leg lerp targets
+  const kL = getCharKnee(CHAR_HIP_L, posL, isHKL);
+  const kR = getCharKnee(CHAR_HIP_R, posR, isHKR);
+  charLegL.tkx=kL.x; charLegL.tky=kL.y; charLegL.tfx=posL.x; charLegL.tfy=posL.y;
+  charLegR.tkx=kR.x; charLegR.tky=kR.y; charLegR.tfx=posR.x; charLegR.tfy=posR.y;
+
+  // Knee highlight rings
+  const knL = document.getElementById('char-kneeL');
+  const knR = document.getElementById('char-kneeR');
+  if (knL) {
+    knL.setAttribute('cx', CHAR_POS.HKL.kx);
+    knL.setAttribute('cy', CHAR_POS.HKL.ky);
+    knL.setAttribute('opacity', isHKL ? '1' : '0');
+  }
+  if (knR) {
+    knR.setAttribute('cx', CHAR_POS.HKR.kx);
+    knR.setAttribute('cy', CHAR_POS.HKR.ky);
+    knR.setAttribute('opacity', isHKR ? '1' : '0');
+  }
+
+  // Arm swing — opposite arm drives forward on high knee
+  if (isHKL) {
+    charArmL.tx=84; charArmL.ty=57;   // L arm swings back
+    charArmR.tx=212; charArmR.ty=76;  // R arm drives forward
+  } else if (isHKR) {
+    charArmR.tx=214; charArmR.ty=57;  // R arm swings back
+    charArmL.tx=84; charArmL.ty=76;   // L arm drives forward
+  } else {
+    charArmL.tx=95; charArmL.ty=68;
+    charArmR.tx=205; charArmR.ty=68;
+  }
+}
+
+function animCharLegs() {
+  const sp = 0.14;
+  const L = (a,b) => a+(b-a)*sp;
+
+  charLegL.kx=L(charLegL.kx,charLegL.tkx); charLegL.ky=L(charLegL.ky,charLegL.tky);
+  charLegL.fx=L(charLegL.fx,charLegL.tfx); charLegL.fy=L(charLegL.fy,charLegL.tfy);
+  charLegR.kx=L(charLegR.kx,charLegR.tkx); charLegR.ky=L(charLegR.ky,charLegR.tky);
+  charLegR.fx=L(charLegR.fx,charLegR.tfx); charLegR.fy=L(charLegR.fy,charLegR.tfy);
+  charArmL.x=L(charArmL.x,charArmL.tx); charArmL.y=L(charArmL.y,charArmL.ty);
+  charArmR.x=L(charArmR.x,charArmR.tx); charArmR.y=L(charArmR.y,charArmR.ty);
+
+  const llu = document.getElementById('char-llu');
+  if (llu) {
+    const f = v => v.toFixed(1);
+    llu.setAttribute('x2',f(charLegL.kx)); llu.setAttribute('y2',f(charLegL.ky));
+    const lll = document.getElementById('char-lll');
+    lll.setAttribute('x1',f(charLegL.kx)); lll.setAttribute('y1',f(charLegL.ky));
+    lll.setAttribute('x2',f(charLegL.fx)); lll.setAttribute('y2',f(charLegL.fy));
+    const lru = document.getElementById('char-lru');
+    lru.setAttribute('x2',f(charLegR.kx)); lru.setAttribute('y2',f(charLegR.ky));
+    const lrl = document.getElementById('char-lrl');
+    lrl.setAttribute('x1',f(charLegR.kx)); lrl.setAttribute('y1',f(charLegR.ky));
+    lrl.setAttribute('x2',f(charLegR.fx)); lrl.setAttribute('y2',f(charLegR.fy));
+    const la = document.getElementById('char-la');
+    la.setAttribute('x2',f(charArmL.x)); la.setAttribute('y2',f(charArmL.y));
+    const ra = document.getElementById('char-ra');
+    ra.setAttribute('x2',f(charArmR.x)); ra.setAttribute('y2',f(charArmR.y));
+  }
+
+  requestAnimationFrame(animCharLegs);
+}
+
+/* ──────────────────────────────────────────
+   SESSION
+────────────────────────────────────────── */
+function goStart() {
+  beat = 0; round = 1; cueCount = 0;
+  running = true; paused = false;
+  currentSet = 1; workBeats = 0; breakMode = null;
+  currentStage = TIER_CONFIG[currentTier].startStage; pendingStageUp = false;
+  currentCycle = 0;
+  clearInterval(restCountInt);
+  document.getElementById('restOverlay').classList.remove('visible');
+  try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+
+  document.getElementById('sessBpm').textContent = bpm + ' BPM';
+  document.getElementById('sessLvlTag').textContent = 'LVL ' + level;
+  document.getElementById('stMode').textContent = mode === 'partner' ? '2P' : 'Solo';
+  document.getElementById('pauseBtn').textContent = 'Pause';
+  updateLegend();
+  updateStageUI();
+
+  // Build block sequence for this session
+  const diffMap = {basic:2, advanced:3, pro:4};
+  const maxDiff = diffMap[currentTier] || 2;
+  blockSequence  = buildLevel1Session(maxDiff);
+  currentBlockIdx = 0;
+
+  // Show first block name immediately
+  document.getElementById('sessRTag').textContent =
+    blockSequence.length ? blockSequence[0].name : routine.name;
+  syncSetInfo();
+
+  sessStart = Date.now();
+  timerInt = setInterval(tickTimer, 1000);
+  showScr('session');
+  setSessionView('grid');
+  clearGrid();
+  fireBeat();
+  beatClock = setInterval(fireBeat, 60000 / bpm);
+}
+
+/* ──────────────────────────────────────────
+   STEP-MARK TUTORIAL OVERLAY
+────────────────────────────────────────── */
+function renderBlockSteps(steps) {
+  document.querySelectorAll('.step-marks').forEach(el => el.remove());
+  if (!steps || !steps.length) return;
+  const padMap = {};
+  steps.forEach((s, i) => {
+    const bn = i + 1;
+    if (s.aL) { (padMap[s.aL] = padMap[s.aL] || []).push({foot:'L', bn}); }
+    if (s.aR) { (padMap[s.aR] = padMap[s.aR] || []).push({foot:'R', bn}); }
+  });
+  Object.entries(padMap).forEach(([padId, marks]) => {
+    const pad = document.getElementById('p-' + padId);
+    if (!pad) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'step-marks';
+    marks.forEach(({foot, bn}) => {
+      const m = document.createElement('span');
+      m.className = `sm sm${foot}`;
+      m.dataset.beat = bn;
+      m.textContent = bn;
+      wrap.appendChild(m);
+    });
+    pad.appendChild(wrap);
+  });
+}
+
+function updateStepMarkers(currentBeat) {
+  document.querySelectorAll('.sm').forEach(m => {
+    const b = parseInt(m.dataset.beat);
+    m.classList.remove('sm-cur','sm-done');
+    if (b === currentBeat) m.classList.add('sm-cur');
+    else if (b < currentBeat) m.classList.add('sm-done');
+  });
+}
+
+function fireBeat() {
+  // ── QUICK BREAK MODE ─────────────────────
+  if (breakMode === 'quick') {
+    quickLeft--;
+
+    // Beat track: cycle through 8 pips showing position in 32-count break
+    const pos = (quickBreakBeats - quickLeft - 1) % 8;
+    for (let i = 0; i < 8; i++) {
+      const p = document.getElementById('bp' + i);
+      p.className = 'bp' + (i === pos ? ' brk' : '');
+    }
+
+    // Count display: countdown from 32
+    const ce = document.getElementById('countBig');
+    ce.textContent = quickLeft > 0 ? quickLeft : 0;
+    ce.className = 'count-big acc';
+    document.getElementById('stBeat').textContent = quickLeft;
+
+    // Cue bar shows break label
+    document.getElementById('cueIcon').textContent = '';
+    document.getElementById('cueText').textContent = 'QUICK BREAK';
+    document.getElementById('cueInner').classList.add('show');
+
+    playClick(pos === 0); // accent at the top of each 8-count within the break
+
+    if (quickLeft <= 0) endQuickBreak();
+    return;
+  }
+
+  // ── NORMAL BEAT ──────────────────────────
+  const b = beat;
+
+  // Stage advance on phrase boundary (beat 0)
+  if (b === 0 && pendingStageUp && breakMode === null) {
+    pendingStageUp = false;
+    if (currentStage < 4) {
+      currentStage++;
+      updateStageUI();
+    }
+  }
+
+  // Cycle advance on phrase boundary for multi-cycle routines
+  if (b === 0 && routine.cycles) currentCycle++;
+
+  // Turn cue overrides level cue; getCueForCurrentStage respects stage 4 silence
+  const turnCue = getAutoTurnCue(b);
+  const stepData = getCurrentSteps()[b];
+  const hkCue = (stepData && stepData.hk) ? {icon:'↑', label:'HIGH KNEE'} : null;
+  let cue = turnCue || hkCue || getCueForCurrentStage(b);
+
+  const ce = document.getElementById('countBig');
+  ce.textContent = b + 1;
+  ce.className = 'count-big' + (b === 0 ? ' acc' : '');
+
+  // Phrase counter — dancer-style "2 · 5" display
+  const pn = document.getElementById('phraseNum');
+  if (pn && blockSequence.length) {
+    const blk = blockSequence[currentBlockIdx % blockSequence.length];
+    const pNum = blk && blk.phraseNum ? blk.phraseNum : 1;
+    pn.textContent = pNum;
+    // Pop on new phrase (beat 0)
+    if (b === 0) {
+      pn.classList.remove('pop');
+      void pn.offsetWidth;
+      pn.classList.add('pop');
+    }
+  } else if (pn) {
+    pn.textContent = '';
+  }
+
+  tickBt(b);
+  document.getElementById('stBeat').textContent = b + 1;
+
+  showCue(cue);
+  if (cue) {
+    cueCount++;
+    document.getElementById('stCues').textContent = cueCount;
+  }
+
+  clearGrid();
+  void document.getElementById('theGrid').offsetWidth; // force reflow so padHit re-triggers on same pad
+  paintStep(b, true, cue);
+  paintStep((b + 1) % 8, false, null);
+
+  // Step-mark tutorial overlay
+  if (blockSequence.length > 0) {
+    if (b === 0) renderBlockSteps(getCurrentSteps());
+    updateStepMarkers(b + 1);
+  }
+
+  // Grid pulse / turn flash
+  const g = document.getElementById('theGrid');
+  if (turnCue) {
+    g.classList.remove('pulse','turn-flash');
+    void g.offsetWidth;
+    g.classList.add('turn-flash');
+    playTurnClick();
+  } else if (b === 0) {
+    g.classList.remove('pulse','turn-flash');
+    void g.offsetWidth;
+    g.classList.add('pulse');
+  }
+
+  // Direction arrow
+  updateDirArrow(b);
+
+  playClick(b === 0 && !turnCue);
+
+  beat = (b + 1) % 8;
+  if (beat === 0) {
+    round++;
+    // Advance to the next block in the sequence
+    if (blockSequence.length > 0) currentBlockIdx++;
+    syncSetInfo();
+    document.getElementById('stRounds').textContent = round;
+  }
+
+  // ── WORK BEAT COUNTER ────────────────────
+  // beats per set = workSetDuration(s) × bpm / 60
+  const beatsPerSet = Math.max(8, Math.round(workSetDuration * bpm / 60));
+  workBeats++;
+  if (workBeats >= beatsPerSet) {
+    workBeats = 0;
+    if (currentSet === 1) {
+      triggerQuickBreak();
+    } else {
+      triggerFullRest();
+    }
+  }
+}
+
+function restartClock() {
+  clearInterval(beatClock);
+  beatClock = setInterval(fireBeat, 60000 / bpm);
+}
+
+/* ──────────────────────────────────────────
+   QUICK BREAK (32 beats — clock keeps running)
+────────────────────────────────────────── */
+function triggerQuickBreak() {
+  breakMode = 'quick';
+  quickLeft = quickBreakBeats;
+  beat = 0; // reset phrase position so next work set starts clean
+  clearGrid();
+  syncSetInfo();
+}
+
+function endQuickBreak() {
+  breakMode = null;
+  currentSet = 2;
+  beat = 0;
+  workBeats = 0;
+  clearGrid();
+  document.getElementById('cueInner').classList.remove('show');
+  syncSetInfo();
+}
+
+/* ──────────────────────────────────────────
+   FULL REST (beat stops — countdown timer)
+────────────────────────────────────────── */
+function triggerFullRest() {
+  clearInterval(beatClock); // stop beat during rest
+  breakMode = 'full';
+  restRemain = restDuration;
+  beat = 0;
+  clearGrid();
+  document.getElementById('cueInner').classList.remove('show');
+  document.getElementById('roSetInfo').textContent = 'SET 2 OF 2 COMPLETE';
+  updateRestDisplay();
+  document.getElementById('restOverlay').classList.add('visible');
+  restCountInt = setInterval(tickRestCountdown, 1000);
+}
+
+function tickRestCountdown() {
+  restRemain--;
+  updateRestDisplay();
+  if (restRemain <= 0) endFullRest();
+}
+
+function updateRestDisplay() {
+  const m = Math.floor(restRemain / 60);
+  const s = restRemain % 60;
+  document.getElementById('roCountdown').textContent = m + ':' + String(s).padStart(2,'0');
+  const pct = (restRemain / restDuration) * 100;
+  document.getElementById('roBarFill').style.width = pct + '%';
+}
+
+function endFullRest() {
+  clearInterval(restCountInt);
+  document.getElementById('restOverlay').classList.remove('visible');
+  breakMode = null;
+  currentSet = 1;
+  workBeats = 0;
+  syncSetInfo();
+  // Restart beat clock
+  fireBeat();
+  beatClock = setInterval(fireBeat, 60000 / bpm);
+}
+
+function skipRest() {
+  clearInterval(restCountInt);
+  endFullRest();
+}
+
+/* ──────────────────────────────────────────
+   SET INFO DISPLAY
+────────────────────────────────────────── */
+function syncSetInfo() {
+  const el = document.getElementById('sessSetInfo');
+  if (breakMode === 'quick') {
+    el.textContent = 'Quick Break · ' + quickLeft + ' left';
+    document.getElementById('sessRTag').textContent = 'QUICK BREAK';
+  } else {
+    el.textContent = 'Set ' + currentSet + '/2 · Rnd ' + round;
+    if (blockSequence.length) {
+      const block = blockSequence[currentBlockIdx % blockSequence.length];
+      const arrow = block.dir === 'back' ? ' ↓' : ' ↑';
+      const styleLabel = {
+        together:'Together', double_step:'Double Step', quick_slow:'Quick Slow',
+        groove:'Groove', stepback:'Step Back', l_leads:'L Leads',
+        r_leads:'R Leads', scissors:'Scissors', pendulum:'Pendulum',
+        single_alt:'Alternating', wave:'Wave',
+      }[block.style] || 'Flow';
+      document.getElementById('sessRTag').textContent = styleLabel + arrow;
+    } else {
+      document.getElementById('sessRTag').textContent = routine.name;
+    }
+  }
+  updateStageUI(); // keep SKIP button label in sync with current block direction
+}
+
+function togglePause() {
+  if (paused) {
+    paused = false;
+    document.getElementById('pauseBtn').textContent = 'Pause';
+    if (breakMode !== 'full') {
+      beatClock = setInterval(fireBeat, 60000 / bpm);
+    } else {
+      // resume rest countdown
+      restCountInt = setInterval(tickRestCountdown, 1000);
+    }
+    timerInt = setInterval(tickTimer, 1000);
+  } else {
+    paused = true;
+    document.getElementById('pauseBtn').textContent = 'Resume';
+    clearInterval(beatClock);
+    clearInterval(timerInt);
+    clearInterval(restCountInt);
+    clearGrid();
+    document.getElementById('dirArrow').className = 'dir-arrow';
+    if (breakMode !== 'quick') {
+      document.getElementById('cueInner').classList.remove('show');
+    }
+  }
+}
+
+function exitSess() {
+  running = false; paused = false;
+  breakMode = null;
+  clearInterval(beatClock); clearInterval(timerInt); clearInterval(restCountInt);
+  clearGrid();
+  document.getElementById('cueInner').classList.remove('show');
+  document.getElementById('restOverlay').classList.remove('visible');
+  showScr('setup');
+}
+
+/* ──────────────────────────────────────────
+   TIMER
+────────────────────────────────────────── */
+function tickTimer() {
+  const el = Math.floor((Date.now() - sessStart) / 1000);
+  const m = Math.floor(el / 60), s = el % 60;
+  document.getElementById('sessTimer').textContent = m + ':' + String(s).padStart(2, '0');
+}
+
+/* ──────────────────────────────────────────
+   AUDIO
+────────────────────────────────────────── */
+function playClick(accent) {
+  if (!audioCtx) return;
+  try {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    o.frequency.value = accent ? 1100 : 720;
+    const v = accent ? 0.38 : 0.18;
+    g.gain.setValueAtTime(v, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.07);
+    o.start(); o.stop(audioCtx.currentTime + 0.08);
+  } catch(e) {}
+}
+
+/* ──────────────────────────────────────────
+   DIRECTION ARROW
+────────────────────────────────────────── */
+function updateDirArrow(beatIdx) {
+  const el = document.getElementById('dirArrow');
+  const {top} = getRoutineRowRange();
+  if (currentStage < 2 || top < 2) { el.textContent = ''; el.className = 'dir-arrow'; return; }
+  const t = getTurnType(beatIdx);
+  if (t) {
+    el.textContent = '↺';
+    el.className = 'dir-arrow tr';
+    return;
+  }
+  const dir = getPhaseDir(beatIdx);
+  if (dir === 'up')   { el.textContent = '↑'; el.className = 'dir-arrow up'; }
+  else if (dir === 'down') { el.textContent = '↓'; el.className = 'dir-arrow dn'; }
+  else                { el.textContent = '';  el.className = 'dir-arrow'; }
+}
+
+/* ──────────────────────────────────────────
+   TURN AUDIO (distinct from normal click)
+────────────────────────────────────────── */
+function playTurnClick() {
+  if (!audioCtx) return;
+  try {
+    // Two-tone: quick low then high — feels like a "jump" sound
+    [220, 880].forEach((freq, i) => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.connect(g); g.connect(audioCtx.destination);
+      o.frequency.value = freq;
+      const t0 = audioCtx.currentTime + i * 0.06;
+      g.gain.setValueAtTime(i === 1 ? 0.45 : 0.2, t0);
+      g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.1);
+      o.start(t0); o.stop(t0 + 0.12);
+    });
+  } catch(e) {}
+}
+
+/* ──────────────────────────────────────────
+   SCREEN SWITCH
+────────────────────────────────────────── */
+function showScr(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('scr-' + id).classList.add('active');
+}
+
+init();
+requestAnimationFrame(animCharLegs);
+</script>
+</body>
+</html>
