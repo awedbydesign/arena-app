@@ -643,6 +643,9 @@
     <button class="btn btn-dark btn-med" onclick="showScreen('setup')">Quick Play</button>
     <button class="btn btn-solo btn-med" onclick="showScreen('practice-setup')">Solo Practice</button>
   </div>
+  <div class="home-grid" style="grid-template-columns:1fr;">
+    <a class="btn btn-dark btn-med" href="https://awedbydesign.com/arena-walkthrough?play" target="_blank" rel="noopener" style="text-decoration:none;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;box-sizing:border-box;border-color:var(--gold);">Virtual Arena<small style="display:block;font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:none;color:var(--muted);margin-top:2px;">Play a full game from anywhere · same account</small></a>
+  </div>
 
   <div class="home-label">Field</div>
   <div class="field-card">
@@ -663,7 +666,7 @@
     <button class="btn btn-dark btn-med" onclick="openHtpModal()">How to Play</button>
   </div>
   <div class="home-grid" style="grid-template-columns:1fr;">
-    <a class="btn btn-dark btn-med" href="https://awedbydesign.com/arena-walkthrough" target="_blank" rel="noopener" style="text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box;border-color:var(--gold);">Virtual Walkthrough · Throw 3 cards</a>
+    <a class="btn btn-dark btn-med" href="https://awedbydesign.com/arena-walkthrough" target="_blank" rel="noopener" style="text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box;border-color:var(--gold);">Virtual Walkthrough · Learn in 3 cards</a>
   </div>
 
   <div class="spacer"></div>
@@ -1062,6 +1065,10 @@
     <label for="lb-season" class="lb-season-lbl">Season</label>
     <select id="lb-season" class="lb-season-sel" onchange="LBV.season=this.value;lbRender()"></select>
   </div>
+  <div class="lb-tab-bar" style="margin-bottom:8px;">
+    <button id="lbwhere-live" class="lb-tab lb-tab-active" onclick="LBV.where='live';lbRender()">LIVE ARENA</button>
+    <button id="lbwhere-virtual" class="lb-tab" onclick="LBV.where='virtual';LBV.tab='global';lbRender()">VIRTUAL ARENA</button>
+  </div>
   <div class="lb-tab-bar">
     <button id="lbtab-global" class="lb-tab lb-tab-active" onclick="LBV.tab='global';lbRender()">GLOBAL</button>
     <button id="lbtab-local" class="lb-tab" onclick="LBV.tab='local';lbRender()">LOCAL</button>
@@ -1397,7 +1404,7 @@ let LIVE = {
 // On load, the app fetches a fresh copy of itself (query string beats any CDN or
 // browser cache). If the live site is newer, it reloads once. Host and joiner
 // phones on different versions was the cause of failed joins after a deploy.
-const APP_VERSION = 'v43';
+const APP_VERSION = 'v44';
 async function checkForAppUpdate(){
   try{
     const res = await fetch(location.pathname + '?vcheck=' + Date.now(), { cache:'no-store' });
@@ -5650,6 +5657,7 @@ function l2SetupMapPlace(which){
 <div id="screen-stats" class="screen">
   <div class="top-bar"><button class="back-btn" onclick="showScreen('home')">Back</button><div class="top-bar-title">My Stats</div></div>
   <div id="st-who" style="font-size:12px;color:var(--muted);margin:-2px 0 10px;"></div>
+  <div class="st-chips" id="st-where"></div>
   <div class="st-chips" id="st-range"></div>
   <div class="st-chips" id="st-deck"></div>
   <div id="st-body"><div class="st-empty">Loading…</div></div>
@@ -6011,7 +6019,7 @@ showResults = function(){
 // ════════════════════════════════════════════════════════════
 // MY STATS (v36): season line, shot chart, card sheet, game history
 // ════════════════════════════════════════════════════════════
-const ST = { rows:[], results:{}, range:'all', deck:'all', card:null, loaded:false, showAllCards:false, openGame:null };
+const ST = { rows:[], results:{}, where:'live', range:'all', deck:'all', card:null, loaded:false, showAllCards:false, openGame:null };
 function showStats(){ showScreen('stats'); statsLoad(); }
 function statsRowFromLocal(g, pi, r, t){
   const p=g.players[pi], c=g.rounds[r], sc=(g.scores[pi]||[])[r]||{}, mt=(((g.meta||[])[pi]||[])[r]||{})['t'+t]||{};
@@ -6051,6 +6059,7 @@ function statsFiltered(){
   const now=Date.now(); const yr=new Date().getFullYear();
   return ST.rows.filter(r=>{
     if(r.mode==='playoff') return false;
+    if((r.mode==='virtual')!==(ST.where==='virtual')) return false;
     const t=Date.parse(r.played_at||0)||0;
     if(ST.range==='30d' && now-t>30*864e5) return false;
     if(ST.range==='year' && new Date(t).getFullYear()!==yr) return false;
@@ -6062,6 +6071,7 @@ function statsCardKey(r){ return r.card_id || `${r.tee}|${r.mando}|${r.basket}`;
 function statsCardHtml(r,cls){ return `<span class="${cls||''}"><span class="t">${ZONE_NUMS[r.tee]||''} ${r.tee}</span><span class="sep">›</span><span class="m">${r.mando}</span><span class="sep">›</span><span class="b">${ZONE_NUMS[r.basket]||''} ${r.basket}</span></span>`; }
 function statsRender(){
   const body=document.getElementById('st-body'); if(!body) return;
+  document.getElementById('st-where').innerHTML=[['live','Live Arena'],['virtual','Virtual Arena']].map(([k,l])=>`<button class="st-chip${ST.where===k?' on':''}" onclick="ST.where='${k}';ST.card=null;ST.openGame=null;statsRender()">${l}</button>`).join('');
   document.getElementById('st-range').innerHTML=[['all','All time'],['year',String(new Date().getFullYear())],['30d','Last 30 days']].map(([k,l])=>`<button class="st-chip${ST.range===k?' on':''}" onclick="ST.range='${k}';statsRender()">${l}</button>`).join('');
   document.getElementById('st-deck').innerHTML=[['all','All decks'],['green','Green'],['yellow','Yellow'],['red','Red']].map(([k,l])=>`<button class="st-chip${ST.deck===k?' on':''}" onclick="ST.deck='${k}';ST.card=null;statsRender()">${l}</button>`).join('');
   const rows=statsFiltered();
@@ -6161,7 +6171,7 @@ const SEASONS = [
   { id:'beta', name:'Beta Season', start:'2026-09-20T00:00:00', end:null },
   { id:'all',  name:'All time',    start:null, end:null },
 ];
-const LBV = { tab:'global', season:'beta', deck:'all' };
+const LBV = { tab:'global', season:'beta', deck:'all', where:'live' };   // where: live games on a field, or virtual games thrown on awedbydesign.com (arena_results.mode='virtual')
 const SEASON_PTS_TABLE = [5,3,2,1];
 function lbSeason(){ return SEASONS.find(x=>x.id===LBV.season)||SEASONS[0]; }
 function lbInSeason(iso){ const sn=lbSeason(); const t=Date.parse(iso||0)||0; if(sn.start && t<Date.parse(sn.start)) return false; if(sn.end && t>Date.parse(sn.end)) return false; return true; }
@@ -6173,11 +6183,16 @@ showLeaderboardScreen = function(){
 function lbRender(){
   document.getElementById('lbtab-global').className='lb-tab'+(LBV.tab==='global'?' lb-tab-active':'');
   document.getElementById('lbtab-local').className='lb-tab'+(LBV.tab==='local'?' lb-tab-active':'');
+  const virt=LBV.where==='virtual'; if(virt) LBV.tab='global';
+  document.getElementById('lbwhere-live').className='lb-tab'+(!virt?' lb-tab-active':'');
+  document.getElementById('lbwhere-virtual').className='lb-tab'+(virt?' lb-tab-active':'');
+  document.getElementById('lbtab-local').style.display=virt?'none':'';
+  document.getElementById('lbtab-global').className='lb-tab'+(LBV.tab==='global'?' lb-tab-active':'');
   const host=document.getElementById('lb-screen-content');
   const chips=`<div class="deck-chips">${['all','green','yellow','red'].map(d=>`<button class="deck-chip ${d}${LBV.deck===d?' on':''}" onclick="acctSetDeck('${d}')">${d==='all'?'all decks':d}</button>`).join('')}</div>`;
   if(LBV.tab==='local'){ host.innerHTML=chips+lbTable(lbLocalRows(), 'this phone'); return; }
   host.innerHTML=chips+'<div style="text-align:center;color:var(--muted);padding:30px 0;font-size:13px;">Loading…</div>';
-  lbGlobalRows().then(rows=>{ if(LBV.tab==='global') host.innerHTML=chips+lbTable(rows,'everyone'); });
+  const want=LBV.where; lbGlobalRows().then(rows=>{ if(LBV.tab==='global' && LBV.where===want) host.innerHTML=chips+lbTable(rows,'everyone'); });
 }
 // rows: { key, name, pts, rank, deck, played_at, me, game }
 async function lbGlobalRows(){
@@ -6186,7 +6201,8 @@ async function lbGlobalRows(){
     let q=SB.from('arena_results').select('game_id,player_name,user_id,deck,pts,rank,played_at,mode').order('played_at',{ascending:false}).limit(4000);
     const sn=lbSeason(); if(sn.start) q=q.gte('played_at', new Date(sn.start).toISOString()); if(sn.end) q=q.lte('played_at', new Date(sn.end).toISOString());
     const { data } = await q;
-    return (data||[]).filter(r=>r.mode!=='practice-solo').map(r=>({ key:r.user_id||('n:'+normalizePlayerName(r.player_name||'')), name:r.player_name, pts:r.pts||0, rank:r.rank, deck:(r.deck==='all'?'red':r.deck), game:r.game_id, me:!!(ACCT.user&&r.user_id===ACCT.user.id) }));
+    const virt=LBV.where==='virtual';
+    return (data||[]).filter(r=>virt ? r.mode==='virtual' : (r.mode!=='practice-solo' && r.mode!=='virtual')).map(r=>({ key:r.user_id||('n:'+normalizePlayerName(r.player_name||'')), name:r.player_name, pts:r.pts||0, rank:r.rank, deck:(r.deck==='all'?'red':r.deck), game:r.game_id, me:!!(ACCT.user&&r.user_id===ACCT.user.id) }));
   }catch(e){ return null; }
 }
 function lbLocalRows(){
@@ -6207,17 +6223,18 @@ function lbTable(rows, scope){
   if(rows===null) return '<div style="text-align:center;color:var(--muted);padding:30px 0;">Global board is offline.</div>';
   const sn=lbSeason();
   rows = rows.filter(r=>LBV.deck==='all'||r.deck===LBV.deck);
-  if(!rows.length) return `<div style="text-align:center;padding:40px 0;color:var(--muted);"><div style="font-size:17px;font-weight:800;color:var(--text);">No games yet</div><div style="font-size:13px;margin-top:6px;">${sn.name}${LBV.deck!=='all'?' · '+LBV.deck+' deck':''} · ${scope}</div></div>`;
+  const virt=LBV.where==='virtual' && scope==='everyone';
+  if(!rows.length) return `<div style="text-align:center;padding:40px 0;color:var(--muted);"><div style="font-size:17px;font-weight:800;color:var(--text);">No games yet</div><div style="font-size:13px;margin-top:6px;">${virt?'Virtual Arena · ':''}${sn.name}${LBV.deck!=='all'?' · '+LBV.deck+' deck':''} · ${scope}</div></div>`;
   const agg={};
   rows.forEach(r=>{ const e=agg[r.key]||(agg[r.key]={ key:r.key, name:r.name, sp:0, games:0, wins:0, total:0, best:0, me:false });
     e.games++; e.sp+=SEASON_PTS_TABLE[(r.rank||99)-1]||0; if(r.rank===1) e.wins++; e.total+=r.pts; if(r.pts>e.best) e.best=r.pts; if(r.me) e.me=true; if((r.name||'').length>(e.name||'').length) e.name=r.name; });
-  const entries=Object.values(agg).sort((a,b)=>b.sp-a.sp||b.wins-a.wins||b.best-a.best||b.games-a.games);
+  const entries=Object.values(agg).sort(virt ? ((a,b)=>b.best-a.best||(b.total/b.games)-(a.total/a.games)||b.games-a.games) : ((a,b)=>b.sp-a.sp||b.wins-a.wins||b.best-a.best||b.games-a.games));
   return entries.map((e,rank)=>`<div class="lb-row${rank===0?' leader':''}"${e.me?' style="outline:1.5px solid #FFD700;"':''}>
       <div class="lb-rank" style="font-size:${rank<3?'22':'18'}px;">${rankBadge(rank)}</div>
       <div class="lb-info"><div class="lb-name">${acctEsc(e.name)}${e.me?' <span style="font-size:10px;color:#FFD700;">YOU</span>':''}</div>
-        <div class="lb-side">${e.wins} win${e.wins!==1?'s':''} · ${e.games} game${e.games!==1?'s':''} · avg ${Math.round(e.total/e.games)} · best ${e.best}</div></div>
-      <div style="text-align:right;"><div class="lb-pts" style="font-size:22px;">${e.sp}</div><div style="font-size:10px;color:var(--muted);font-weight:700;">season pts</div></div>
-    </div>`).join('') + `<div class="lb-meta">${sn.name} · ${scope}${LBV.deck!=='all'?' · '+LBV.deck+' deck':''}<br>Season points per game: 1st 5 · 2nd 3 · 3rd 2 · 4th 1. ${scope==='everyone'?'Sign in so your games count for you.':'Games finished on this phone.'}</div>`;
+        <div class="lb-side">${virt?'':`${e.wins} win${e.wins!==1?'s':''} · `}${e.games} game${e.games!==1?'s':''} · avg ${Math.round(e.total/e.games)}${virt?'':` · best ${e.best}`}</div></div>
+      <div style="text-align:right;"><div class="lb-pts" style="font-size:22px;">${virt?e.best:e.sp}</div><div style="font-size:10px;color:var(--muted);font-weight:700;">${virt?'best game':'season pts'}</div></div>
+    </div>`).join('') + `<div class="lb-meta">${sn.name} · ${scope}${LBV.deck!=='all'?' · '+LBV.deck+' deck':''}<br>${virt?'Virtual Arena: 8 cards thrown on awedbydesign.com. Ranked by best game out of 80, then average.':'Season points per game: 1st 5 · 2nd 3 · 3rd 2 · 4th 1.'} ${scope==='everyone'?'Sign in so your games count for you.':'Games finished on this phone.'}</div>`;
 }
 async function acctRenderGlobalLB(){
   const host=document.getElementById('lb-screen-content'); if(!host) return;
