@@ -1,4 +1,4 @@
-const CACHE = 'arena-v42';
+const CACHE = 'arena-v43';
 const CORE = ['/', '/index.html', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/arena-logo2.png'];
 
 self.addEventListener('install', e => {

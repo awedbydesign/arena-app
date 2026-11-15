@@ -662,6 +662,9 @@
     <button class="btn btn-dark btn-med" onclick="openMapModal()">Arena Layout</button>
     <button class="btn btn-dark btn-med" onclick="openHtpModal()">How to Play</button>
   </div>
+  <div class="home-grid" style="grid-template-columns:1fr;">
+    <a class="btn btn-dark btn-med" href="https://awedbydesign.com/arena-walkthrough" target="_blank" rel="noopener" style="text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box;border-color:var(--gold);">Virtual Walkthrough · Throw 3 cards</a>
+  </div>
 
   <div class="spacer"></div>
   <div style="text-align:center;margin:18px 0 4px;">
@@ -1267,6 +1270,7 @@
     <button class="modal-close" onclick="closeHtpModal()">&times;</button>
     <div class="modal-title">How to Play</div>
     <div class="modal-sub">The Arena · Disc Golf Throwing Game</div>
+    <a href="https://awedbydesign.com/arena-walkthrough" target="_blank" rel="noopener" style="display:block;text-align:center;margin:0 0 14px;color:var(--gold);font-size:13px;font-weight:800;letter-spacing:.5px;">Try it first: virtual walkthrough on awedbydesign.com →</a>
 
     <div class="htp-section">
       <h3>Individual Sport</h3>
@@ -1393,7 +1397,7 @@ let LIVE = {
 // On load, the app fetches a fresh copy of itself (query string beats any CDN or
 // browser cache). If the live site is newer, it reloads once. Host and joiner
 // phones on different versions was the cause of failed joins after a deploy.
-const APP_VERSION = 'v42';
+const APP_VERSION = 'v43';
 async function checkForAppUpdate(){
   try{
     const res = await fetch(location.pathname + '?vcheck=' + Date.now(), { cache:'no-store' });
